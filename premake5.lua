@@ -117,7 +117,7 @@ project "game"
 	}
 	
 	postbuildcommands {
-		"{COPY} %{cfg.buildtarget.abspath} %{GAME_BIN_DIR}"
+		"{COPY} %{cfg.buildtarget.abspath} %{GAME_BIN_DIR}/%{cfg.buildtarget.name}"
 	}
 	
 	filter { "configurations:Release", "action:vs*" }
