@@ -353,4 +353,4 @@ MigrationBackup/
 build/*
 game/*.exe
 game/*.dll
-game/bin/*.dll
+game/engine
