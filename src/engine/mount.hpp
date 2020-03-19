@@ -8,6 +8,8 @@
 class Mount
 {
 public:
+	virtual ~Mount() = default;
+
 	enum class CaseSensitivity
 	{
 		Sensitive,

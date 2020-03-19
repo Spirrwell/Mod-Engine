@@ -19,7 +19,7 @@ public:
 		file.open( relpath, pathid, fileSystem );
 	}
 
-	size_t Read( void *buffer, size_t size, size_t count )
+	size_t Read( void *buffer, size_t size, size_t count ) override
 	{
 		return file.read( ( char* )buffer, size, count );
 	}
@@ -30,7 +30,7 @@ public:
 		return 0;
 	}
 
-	aiReturn Seek( size_t offset, aiOrigin origin )
+	aiReturn Seek( size_t offset, aiOrigin origin ) override
 	{
 		if ( !file.seek( static_cast< long int >( offset ), origin ) )
 			return aiReturn_FAILURE;
@@ -84,7 +84,7 @@ public:
 		return new assimpIOStream( pszFile, pathid, fileSystem );
 	}
 
-	void Close( Assimp::IOStream *file )
+	void Close( Assimp::IOStream *file ) override
 	{
 		delete file;
 	}

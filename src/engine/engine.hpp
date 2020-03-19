@@ -66,7 +66,7 @@ public:
 
 	Engine( const int argc, const char * const *argv );
 
-	[[noreturn]] void Error( const std::string_view msg ) const;
+	[[noreturn]] void Error( const std::string_view msg ) const override;
 
 	void SetGame( IGame *game ) override { activeGame = game; }
 	IGame *GetGame() const override { return activeGame; }

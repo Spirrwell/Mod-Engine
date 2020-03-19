@@ -84,7 +84,7 @@ public:
 
 	bool IsValid() const override { return ( directoryFile.get() != nullptr ); }
 
-	CaseSensitivity GetCaseSensitivity() const { return CaseSensitivity::Lower; }
+	CaseSensitivity GetCaseSensitivity() const override { return CaseSensitivity::Lower; }
 
 	MountFileHandle OpenFile( std::size_t index ) override;
 	FileSystem::MountFindResult FindFile( const std::filesystem::path &relpath ) const override;

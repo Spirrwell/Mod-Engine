@@ -22,8 +22,8 @@ public:
 
 	void LoadDefaultTextures();
 
-	ITexture *LoadTexture( const std::filesystem::path &relpath, const std::string &pathid, IResourcePool *resourcePoolPtr );
-	ITexture *FindTexture( const std::filesystem::path &relpath, IResourcePool *resourcePoolPtr ) const;
+	ITexture *LoadTexture( const std::filesystem::path &relpath, const std::string &pathid, IResourcePool *resourcePoolPtr ) override;
+	ITexture *FindTexture( const std::filesystem::path &relpath, IResourcePool *resourcePoolPtr ) const override;
 
 private:
 	ITexture *FindTexture_Internal( const std::filesystem::path &relpath, IResourcePool *resourcePoolPtr ) const;

@@ -70,8 +70,8 @@ public:
 	InputType GetInputType() const { return inputType; }
 	void SetInputType( InputType inputType ) { this->inputType = inputType; }
 
-	float GetMouseXRel() const { return mouseXRel; }
-	float GetMouseYRel() const { return mouseYRel; }
+	float GetMouseXRel() const override { return mouseXRel; }
+	float GetMouseYRel() const override { return mouseYRel; }
 
 	bool IsButtonReleased( ButtonIndex buttonIndex ) override;
 	bool IsButtonPressed( ButtonIndex buttonIndex ) override;

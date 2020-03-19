@@ -23,8 +23,8 @@ class Renderer : public IRenderer, public EngineSystem
 {
 public:
 
-	void configure( Engine *engine );
-	void unconfigure( Engine *engine );
+	void configure( Engine *engine ) override;
+	void unconfigure( Engine *engine ) override;
 
 	void WaitIdle();
 
