@@ -1,0 +1,227 @@
+#include "renderer.hpp"
+#include "engine.hpp"
+#include "log.hpp"
+#include "glm/glm.hpp"
+#include "glm/gtx/transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "material.hpp"
+#include "shadersystem.hpp"
+#include "shader.hpp"
+
+void Renderer::configure( Engine *engine )
+{
+	EngineSystem::configure( engine );
+
+	vulkanSystem = engine->GetVulkanSystem();
+	materialSystem = engine->GetMaterialSystem();
+	shaderSystem = engine->GetShaderSystem();
+
+	commandBuffers.resize( vulkanSystem->numSwapChainImages );
+
+	VkCommandBufferAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool = vulkanSystem->commandPool;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandBufferCount = vulkanSystem->numSwapChainImages;
+
+	if ( vkAllocateCommandBuffers( vulkanSystem->device, &allocInfo, commandBuffers.data() ) != VK_SUCCESS ) {
+		engine->Error( "[Vulkan]Failed to allocate command buffers" );
+	}
+
+	const float aspect = ( float )vulkanSystem->swapChainExtent.width / ( float )vulkanSystem->swapChainExtent.height;
+	renderView.viewMatrix = glm::mat4( 1.0f );
+	renderView.projectionMatrix = glm::perspective( glm::radians( 70.0f ), aspect, 0.01f, 10000.0f );
+}
+
+void Renderer::unconfigure( Engine *engine )
+{
+	WaitIdle();
+
+	if ( commandBuffers.size() > 0 ) {
+		vkFreeCommandBuffers( vulkanSystem->device, vulkanSystem->commandPool, vulkanSystem->numSwapChainImages, commandBuffers.data() );
+		commandBuffers.clear();
+	}
+
+	shaderSystem = nullptr;
+	materialSystem = nullptr;
+	vulkanSystem = nullptr;
+
+	EngineSystem::unconfigure( engine );
+}
+
+void Renderer::WaitIdle()
+{
+	if ( vulkanSystem->device != VK_NULL_HANDLE ) {
+		vkDeviceWaitIdle( vulkanSystem->device );
+	}
+}
+
+void Renderer::DrawMesh( IMesh *mesh, const glm::mat4 &modelMat )
+{
+	QueueRender( RenderInfo{ Mesh::ToMesh( mesh ), modelMat } );
+}
+
+// Draws specified model with a 'model' matrix transformation, calls DrawMesh for all meshes in model
+void Renderer::DrawModel( IModel *model, const glm::mat4 &modelMat )
+{
+	Model *realModel = Model::ToModel( model );
+	for ( auto &mesh : realModel->meshes )
+		DrawMesh( mesh.get(), modelMat );
+}
+
+void Renderer::NotifyWindowResized( uint32_t width, uint32_t height )
+{
+	vulkanSystem->NotifyWindowResized( width, height );
+	//shaderSystem->NotifyWindowResized();
+}
+
+void Renderer::NotifyWindowMaximized()
+{
+	isMinimized = false;
+}
+
+void Renderer::NotifyWindowMinimized()
+{
+	isMinimized = true;
+}
+
+void Renderer::BeginFrame()
+{
+	if ( isMinimized ) {
+		return;
+	}
+
+	vkWaitForFences( vulkanSystem->device, 1, &vulkanSystem->inFlightFences[ currentFrame ], VK_TRUE, std::numeric_limits< uint64_t >::max() );
+
+	if ( vkAcquireNextImageKHR( vulkanSystem->device, vulkanSystem->swapChainKHR, std::numeric_limits< uint64_t >::max(), vulkanSystem->imageAvailableSemaphores[ currentFrame ], VK_NULL_HANDLE, &imageIndex ) != VK_SUCCESS ) {
+		Log::PrintlnWarn( "[Vulkan]Failed to acquire swap chain image" );
+		return;
+	}
+
+	isReadyToDraw = true;
+}
+
+void Renderer::EndFrame()
+{
+	renderInfos.clear();
+	isReadyToDraw = false;
+}
+
+void Renderer::DrawScene()
+{
+	if ( !isReadyToDraw ) {
+		return;
+	}
+
+	// Record Command Buffer
+	RecordCommandBuffer();
+
+	VkSemaphore waitSemaphores[] = { vulkanSystem->imageAvailableSemaphores[ currentFrame ] };
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitStages;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers[ imageIndex ];
+
+	VkSemaphore signalSemaphores[] = { vulkanSystem->renderFinishedSemaphores[ currentFrame ] };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+
+	vkResetFences( vulkanSystem->device, 1, &vulkanSystem->inFlightFences[ currentFrame ] );
+
+	if ( vkQueueSubmit( vulkanSystem->graphicsQueue, 1, &submitInfo, vulkanSystem->inFlightFences[ currentFrame ] ) != VK_SUCCESS ) {
+		Log::PrintlnWarn( "[Vulkan]Queue submit failed!" );
+		return;
+	}
+
+	VkPresentInfoKHR presentInfo = {};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = &vulkanSystem->swapChainKHR;
+	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pResults = nullptr; // Optional
+
+	if ( vkQueuePresentKHR( vulkanSystem->presentQueue, &presentInfo ) != VK_SUCCESS ) {
+		Log::PrintlnWarn( "[Vulkan]Queue present failed!" );
+		return;
+	}
+		
+	currentFrame = ( currentFrame + 1 ) % MAX_FRAMES_IN_FLIGHT;
+}
+
+void Renderer::RecordCommandBuffer()
+{
+	auto &commandBuffer = commandBuffers[ imageIndex ];
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+	beginInfo.pInheritanceInfo = nullptr; // Optional
+
+	if ( vkBeginCommandBuffer( commandBuffer, &beginInfo ) != VK_SUCCESS ) {
+		engine->Error( "[Vulkan]Failed to create command buffers" );
+	}
+
+	VkRenderPassBeginInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = vulkanSystem->renderPass;
+	renderPassInfo.framebuffer = vulkanSystem->swapChainFramebuffers[ imageIndex ];
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = vulkanSystem->swapChainExtent;
+
+	std::array< VkClearValue, 2 > clearValues;
+	clearValues[ 0 ].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+	clearValues[ 1 ].depthStencil = { 1.0f, 0 };
+
+	renderPassInfo.clearValueCount = static_cast< uint32_t >( clearValues.size() );
+	renderPassInfo.pClearValues = clearValues.data();
+
+	vkCmdBeginRenderPass( commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
+	for ( RenderInfo &renderInfo : renderInfos )
+	{
+		const auto mesh = renderInfo.mesh;
+
+		if ( !mesh )
+			continue;
+
+		const VkBuffer VertexBuffer = mesh->GetVertexBuffer();
+		const VkBuffer IndexBuffer = mesh->GetIndexBuffer();
+
+		if ( VertexBuffer != VK_NULL_HANDLE ) {
+			auto material = Material::ToMaterial( mesh->GetMaterial() );
+			auto shader = material->GetShader();
+			MVP mvp = {
+				renderInfo.modelMat,
+				renderView.viewMatrix,
+				renderView.projectionMatrix
+			};
+
+			shader->Update( imageIndex, mvp, mesh );
+			vkCmdBindPipeline( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->GetPipeline() );
+			vkCmdBindDescriptorSets( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->GetPipelineLayout(), 0, 1, &mesh->descriptorSets[ imageIndex ], 0, nullptr );
+
+			const VkDeviceSize offset = 0;
+			vkCmdBindVertexBuffers( commandBuffer, 0, 1, &VertexBuffer, &offset );
+
+			if ( IndexBuffer != VK_NULL_HANDLE ) {
+				vkCmdBindIndexBuffer( commandBuffer, IndexBuffer, 0, VK_INDEX_TYPE_UINT32 );
+				vkCmdDrawIndexed( commandBuffer, mesh->GetIndexCount(), 1, 0, 0, 0 );
+			}
+			else {
+				vkCmdDraw( commandBuffer, mesh->GetVertexCount(), 1, 0, 0 );
+			}
+		}
+	}
+
+	vkCmdEndRenderPass( commandBuffer );
+
+	if ( vkEndCommandBuffer( commandBuffer ) != VK_SUCCESS ) {
+		engine->Error( "[Vulkan]Failed to create command buffers" );
+	}
+}

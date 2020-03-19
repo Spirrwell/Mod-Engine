@@ -1,0 +1,6 @@
+{
+	"shader": "BasicShader",
+	"texture": {
+		"diffuse": "textures/models/dungeon/temp_road_overgrown.dds.png"
+	}
+}

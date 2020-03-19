@@ -1,0 +1,6 @@
+{
+	"shader": "BasicShader",
+	"texture": {
+		"diffuse": "textures/models/dungeon/depositphotos_29288355-green-rusty-metal-texture-background.jpeg"
+	}
+}

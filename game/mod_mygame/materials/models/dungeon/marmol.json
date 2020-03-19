@@ -1,0 +1,6 @@
+{
+	"shader": "BasicShader",
+	"texture": {
+		"diffuse": "textures/models/dungeon/steppe_grass_dirt_66.dds.png"
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"hacha": "materials/models/dungeon/hacha.json",
+	"piso": "materials/models/dungeon/piso.json",
+	"oxido": "materials/models/dungeon/oxido.json",
+	"marmol": "materials/models/dungeon/marmol.json",
+	"marmol_blanco": "materials/models/dungeon/marmol_blanco.json",
+	"ESTATUa": "materials/models/dungeon/ESTATUa.json",
+	"Material": "materials/models/dungeon/Material.json"
+}

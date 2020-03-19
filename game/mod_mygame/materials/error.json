@@ -1,0 +1,6 @@
+{
+	"shader": "BasicShader",
+	"texture": {
+		"diffuse": "textures/error.png"
+	}
+}

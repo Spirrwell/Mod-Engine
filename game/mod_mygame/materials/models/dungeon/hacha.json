@@ -1,0 +1,6 @@
+{
+	"shader": "BasicShader",
+	"texture": {
+		"diffuse": "textures/models/dungeon/axt_textur.jpeg"
+	}
+}

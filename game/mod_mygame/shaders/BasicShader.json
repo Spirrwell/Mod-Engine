@@ -1,0 +1,11 @@
+{
+	"name": "BasicShader",
+	"stages": {
+		"vertex": {
+			"file": "BasicShader.vert.spv",
+		}
+		"fragment": { 
+			"file": "BasicShader.frag.spv"
+		}
+	}
+}

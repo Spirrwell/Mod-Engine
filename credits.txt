@@ -1,0 +1,3 @@
+Dungeon Game Scene:
+Model and textures by VincentGJ https://sketchfab.com/3d-models/dungeon-game-scene-f9bb4330f158436ebd4b1f29d70ed589
+License: https://creativecommons.org/licenses/by/4.0/
