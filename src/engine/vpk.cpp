@@ -186,7 +186,7 @@ MountFileHandle VPK::OpenFile( std::size_t index )
 			{
 				file,
 				static_cast< size_t >( start ),
-				static_cast< size_t >( start + fileEntry.directoryEntry.EntryLength )
+				start + static_cast< size_t >( fileEntry.directoryEntry.EntryLength )
 			};
 		}
 	}
@@ -196,16 +196,16 @@ MountFileHandle VPK::OpenFile( std::size_t index )
 	if ( !file )
 		return {};
 
-	const uint32_t start = vpkHeader.GetVersionSize() + vpkHeader.TreeSize + fileEntry.directoryEntry.EntryOffset;
+	const size_t start = vpkHeader.GetVersionSize() + vpkHeader.TreeSize + fileEntry.directoryEntry.EntryOffset;
 
-	if ( fseek( file, start, SEEK_SET ) != 0 )
+	if ( fseek( file, ( long )start, SEEK_SET ) != 0 )
 		handleError();
 
 	return MountFileHandle 
 	{
 		file,
 		static_cast< size_t >( start ),
-		static_cast< size_t >( start + fileEntry.directoryEntry.EntryLength )
+		start + static_cast< size_t >( fileEntry.directoryEntry.EntryLength )
 	};
 }
 
