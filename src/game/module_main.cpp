@@ -4,19 +4,14 @@
 
 #include "game.hpp"
 
-Game *game = nullptr;
-
 extern "C" EXPORT void module_configure( IEngine *engine )
 {
 	Log::configure( engine );
-	game = new Game;
-	engine->SetGame( game );
+	engine->SetGame( new Game );
 }
 
 extern "C" EXPORT void module_unconfigure( IEngine *engine )
 {
-	// Note: Unloading the game module implicitly sets the engine's game to nullptr
-	delete game;
-	game = nullptr;
+	// Note: The engine deletes the game pointer
 	Log::unconfigure();
 }

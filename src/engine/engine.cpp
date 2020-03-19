@@ -84,6 +84,8 @@ void Engine::Shutdown()
 	if ( activeGame )
 		activeGame->unconfigure( this );
 
+	delete activeGame;
+
 	moduleSystem->UnloadGameBinModule( "game" );
 
 	resourcePools.clear();
