@@ -19,7 +19,7 @@ struct RenderInfo
 	glm::mat4 modelMat;
 };
 
-class Renderer : public IRenderer, public EngineSystem
+class RenderSystem : public IRenderSystem, public EngineSystem
 {
 public:
 

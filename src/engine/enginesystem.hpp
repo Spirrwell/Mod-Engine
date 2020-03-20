@@ -11,8 +11,8 @@ public:
 	EngineSystem() = default;
 	virtual ~EngineSystem() = default;
 
-	virtual void configure( Engine *engine ) { this->engine = engine; }
-	virtual void unconfigure( Engine *engine ) { this->engine = nullptr; }
+	virtual void configure( Engine *engine );
+	virtual void unconfigure( Engine *engine );
 
 protected:
 	Engine *engine = nullptr;

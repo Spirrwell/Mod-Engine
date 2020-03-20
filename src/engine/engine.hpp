@@ -88,7 +88,7 @@ public:
 	TextureSystem *GetTextureSystem() const { return CheckSystem( textureSystem.get() ); }
 	ShaderSystem *GetShaderSystem() const { return CheckSystem( shaderSystem.get() ); }
 	MaterialSystem *GetMaterialSystem() const { return CheckSystem( materialSystem.get() ); }
-	Renderer *GetRenderer() const { return CheckSystem( renderer.get() ); }
+	RenderSystem *GetRenderSystem() const { return CheckSystem( renderer.get() ); }
 	InputSystem *GetInputSystem() const { return CheckSystem( inputSystem.get() ); }
 	ModelSystem *GetModelSystem() const { return CheckSystem( modelSystem.get() ); }
 
@@ -97,7 +97,7 @@ public:
 
 	IResourcePool *GetGlobalResourcePool() const override;
 
-	IRenderer *GetIRenderer() const override { return GetRenderer(); }
+	IRenderSystem *GetIRenderSystem() const override { return GetRenderSystem(); }
 	IInputSystem *GetIInputSystem() const override { return GetInputSystem(); }
 	IModelSystem *GetIModelSystem() const override { return GetModelSystem(); }
 
@@ -126,7 +126,7 @@ private:
 	unique_ptr< TextureSystem > textureSystem;
 	unique_ptr< ShaderSystem > shaderSystem;
 	unique_ptr< MaterialSystem > materialSystem;
-	unique_ptr< Renderer > renderer;
+	unique_ptr< RenderSystem > renderer;
 	unique_ptr< InputSystem > inputSystem;
 	unique_ptr< ModelSystem > modelSystem;
 	std::vector< unique_ptr< ResourcePool > > resourcePools;

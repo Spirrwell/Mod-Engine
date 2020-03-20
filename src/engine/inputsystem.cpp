@@ -28,7 +28,7 @@ void InputSystem::configure( Engine *engine )
 	Left = CreateButton( "Left" );
 	SetKeyBinding( Left, { SDLK_a } );
 
-	renderer = engine->GetRenderer();
+	renderer = engine->GetRenderSystem();
 }
 
 void InputSystem::unconfigure( Engine *engine )

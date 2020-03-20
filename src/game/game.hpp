@@ -26,7 +26,7 @@ private:
 	glm::vec3 position = {};
 	glm::vec3 eulerAngles = {};
 
-	IRenderer *renderer = nullptr;
+	IRenderSystem *renderer = nullptr;
 	IInputSystem *inputSystem = nullptr;
 	
 	ButtonIndex Jump = INVALID_BUTTON_INDEX;

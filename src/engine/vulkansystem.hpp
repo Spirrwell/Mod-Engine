@@ -15,7 +15,7 @@
 #include "memory.hpp"
 #include "enginesystem.hpp"
 
-#define VK_DEBUG 1
+#define VK_DEBUG 0
 
 class VulkanSystem;
 

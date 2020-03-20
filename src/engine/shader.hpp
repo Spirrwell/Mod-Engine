@@ -16,7 +16,7 @@
 #include "baseshadervk.hpp"
 #include "mesh.hpp"
 
-class Renderer;
+class RenderSystem;
 class Material;
 
 enum class ShaderType : size_t
@@ -35,7 +35,7 @@ struct MVP
 
 class Shader : public IShader, public VulkanInterface
 {
-	friend class Renderer;
+	friend class RenderSystem;
 	friend class ShaderSystem;
 
 public:

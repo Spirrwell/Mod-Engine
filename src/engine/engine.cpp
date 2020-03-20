@@ -56,7 +56,7 @@ void Engine::Init()
 	textureSystem = MakeSystem< TextureSystem >();
 	shaderSystem = MakeSystem< ShaderSystem >();
 	materialSystem = MakeSystem< MaterialSystem >();
-	renderer = MakeSystem< Renderer >();
+	renderer = MakeSystem< RenderSystem >();
 	inputSystem = MakeSystem< InputSystem >();
 	modelSystem = MakeSystem< ModelSystem >();
 

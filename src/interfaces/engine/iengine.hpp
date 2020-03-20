@@ -27,7 +27,7 @@ public:
 
 	virtual IResourcePool *GetGlobalResourcePool() const = 0;
 
-	virtual IRenderer *GetIRenderer() const = 0;
+	virtual IRenderSystem *GetIRenderSystem() const = 0;
 	virtual IInputSystem *GetIInputSystem() const = 0;
 	virtual IModelSystem *GetIModelSystem() const = 0;
 };

@@ -8,7 +8,7 @@
 #include "shadersystem.hpp"
 #include "shader.hpp"
 
-void Renderer::configure( Engine *engine )
+void RenderSystem::configure( Engine *engine )
 {
 	EngineSystem::configure( engine );
 
@@ -33,7 +33,7 @@ void Renderer::configure( Engine *engine )
 	renderView.projectionMatrix = glm::perspective( glm::radians( 70.0f ), aspect, 0.01f, 10000.0f );
 }
 
-void Renderer::unconfigure( Engine *engine )
+void RenderSystem::unconfigure( Engine *engine )
 {
 	WaitIdle();
 
@@ -49,43 +49,43 @@ void Renderer::unconfigure( Engine *engine )
 	EngineSystem::unconfigure( engine );
 }
 
-void Renderer::WaitIdle()
+void RenderSystem::WaitIdle()
 {
 	if ( vulkanSystem->device != VK_NULL_HANDLE ) {
 		vkDeviceWaitIdle( vulkanSystem->device );
 	}
 }
 
-void Renderer::DrawMesh( IMesh *mesh, const glm::mat4 &modelMat )
+void RenderSystem::DrawMesh( IMesh *mesh, const glm::mat4 &modelMat )
 {
 	QueueRender( RenderInfo{ Mesh::ToMesh( mesh ), modelMat } );
 }
 
 // Draws specified model with a 'model' matrix transformation, calls DrawMesh for all meshes in model
-void Renderer::DrawModel( IModel *model, const glm::mat4 &modelMat )
+void RenderSystem::DrawModel( IModel *model, const glm::mat4 &modelMat )
 {
 	Model *realModel = Model::ToModel( model );
 	for ( auto &mesh : realModel->meshes )
 		DrawMesh( mesh.get(), modelMat );
 }
 
-void Renderer::NotifyWindowResized( uint32_t width, uint32_t height )
+void RenderSystem::NotifyWindowResized( uint32_t width, uint32_t height )
 {
 	vulkanSystem->NotifyWindowResized( width, height );
 	//shaderSystem->NotifyWindowResized();
 }
 
-void Renderer::NotifyWindowMaximized()
+void RenderSystem::NotifyWindowMaximized()
 {
 	isMinimized = false;
 }
 
-void Renderer::NotifyWindowMinimized()
+void RenderSystem::NotifyWindowMinimized()
 {
 	isMinimized = true;
 }
 
-void Renderer::BeginFrame()
+void RenderSystem::BeginFrame()
 {
 	if ( isMinimized ) {
 		return;
@@ -101,13 +101,13 @@ void Renderer::BeginFrame()
 	isReadyToDraw = true;
 }
 
-void Renderer::EndFrame()
+void RenderSystem::EndFrame()
 {
 	renderInfos.clear();
 	isReadyToDraw = false;
 }
 
-void Renderer::DrawScene()
+void RenderSystem::DrawScene()
 {
 	if ( !isReadyToDraw ) {
 		return;
@@ -155,7 +155,7 @@ void Renderer::DrawScene()
 	currentFrame = ( currentFrame + 1 ) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void Renderer::RecordCommandBuffer()
+void RenderSystem::RecordCommandBuffer()
 {
 	auto &commandBuffer = commandBuffers[ imageIndex ];
 

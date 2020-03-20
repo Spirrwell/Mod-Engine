@@ -15,7 +15,7 @@
 #include "memory.hpp"
 #include "state.hpp"
 
-class Renderer;
+class RenderSystem;
 
 enum class InputType
 {
@@ -79,7 +79,7 @@ public:
 	bool IsButtonJustPressed( ButtonIndex buttonIndex ) override;
 
 private:
-	Renderer *renderer = nullptr;
+	RenderSystem *renderer = nullptr;
 
 	std::vector< SDL_GameController* > gameControllers;
 	std::vector< ButtonCode* > buttonCodes;

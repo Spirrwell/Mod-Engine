@@ -7,7 +7,7 @@
 
 void Game::configure( IEngine *engine )
 {
-	renderer = engine->GetIRenderer();
+	renderer = engine->GetIRenderSystem();
 	inputSystem = engine->GetIInputSystem();
 	modelSystem = engine->GetIModelSystem();
 

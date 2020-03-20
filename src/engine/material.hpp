@@ -67,7 +67,7 @@ protected:
 
 class Material : public IMaterial
 {
-	friend class Renderer;
+	friend class RenderSystem;
 
 public:
 

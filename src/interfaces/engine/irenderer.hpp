@@ -6,10 +6,10 @@
 #include "engine/imesh.hpp"
 #include "engine/imodel.hpp"
 
-class IRenderer
+class IRenderSystem
 {
 public:
-	virtual ~IRenderer() = default;
+	virtual ~IRenderSystem() = default;
 
 	virtual RenderView &GetRenderView() = 0;
 
