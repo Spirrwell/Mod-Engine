@@ -112,8 +112,8 @@ public:
 	std::unordered_map< std::string, Texture* > textures;
 
 private:
-	MaterialBindings bindings;
 	Shader *shader = nullptr;
+	MaterialBindings bindings;
 };
 
 #endif // MATERIAL_HPP

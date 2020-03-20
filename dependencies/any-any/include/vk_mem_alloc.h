@@ -3587,7 +3587,7 @@ void *aligned_alloc(size_t alignment, size_t size)
    #ifdef _DEBUG
        #define VMA_ASSERT(expr)         assert(expr)
    #else
-       #define VMA_ASSERT(expr)
+       #define VMA_ASSERT(expr)			((void)(expr))
    #endif
 #endif
 
@@ -11906,7 +11906,7 @@ VkResult VmaBlockVector::AllocatePage(
     const bool mapped = (createInfo.flags & VMA_ALLOCATION_CREATE_MAPPED_BIT) != 0;
     const bool isUserDataString = (createInfo.flags & VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT) != 0;
     
-    const bool withinBudget = (createInfo.flags & VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT) != 0;
+    //const bool withinBudget = (createInfo.flags & VMA_ALLOCATION_CREATE_WITHIN_BUDGET_BIT) != 0;
     VkDeviceSize freeMemory;
     {
         const uint32_t heapIndex = m_hAllocator->MemoryTypeIndexToHeapIndex(m_MemoryTypeIndex);

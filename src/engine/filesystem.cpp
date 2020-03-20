@@ -213,7 +213,7 @@ unique_ptr< Mount > FileSystem::LoadVPK( const std::filesystem::path &path )
 	unique_ptr< Mount > vpk = make_unique< VPK >( path );
 
 	if ( vpk->IsValid() )
-		return std::move( vpk );
+		return vpk;
 
 	engine->Error( fmt::format( "Failed to load VPK {}", path.generic_string() ) );
 

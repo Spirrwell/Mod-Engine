@@ -23,8 +23,6 @@ void WireShader::InitMesh( Mesh *mesh )
 	mesh->descriptorSets.resize( vulkanSystem->numSwapChainImages );
 	vulkanSystem->AllocateDescriptorSets( &allocInfo, mesh->descriptorSets.data() );
 
-	auto material = mesh->GetMaterial();
-
 	mesh->ubos.resize( (size_t)Uniforms::Count );
 	mesh->ubos[ (size_t)Uniforms::MVP ] = make_unique< UBO >( vulkanSystem, sizeof( MVP ) );
 
