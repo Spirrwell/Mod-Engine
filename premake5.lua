@@ -35,7 +35,7 @@ GAME_SOURCE_DIR = "./src/game"
 INTERFACES_SOURCE_FILES = {
 	INTERFACES_SOURCE_DIR .. "/engine/iengine.hpp",
 	INTERFACES_SOURCE_DIR .. "/game/igame.hpp",
-	INTERFACES_SOURCE_DIR .. "/ilogengine.hpp",
+	INTERFACES_SOURCE_DIR .. "/engine/ilogengine.hpp",
 	INTERFACES_SOURCE_DIR .. "/engine/imaterial.hpp",
 	INTERFACES_SOURCE_DIR .. "/engine/imaterialsystem.hpp",
 	INTERFACES_SOURCE_DIR .. "/engine/imesh.hpp",
