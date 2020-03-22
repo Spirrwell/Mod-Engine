@@ -10,12 +10,13 @@ void FileSystem::configure( Engine *engine )
 	EngineSystem::configure( engine );
 
 	CommandLineSystem *commandlineSystem = engine->GetCommandLineSystem();
-	const auto game = commandlineSystem->GetArgumentInput( "-game" );
+	//const auto game = commandlineSystem->GetArgumentInput( "-game" );
 
-	if ( game.empty() )
-		engine->Error( "No -game specified!" );
+	//if ( game.empty() )
+		//engine->Error( "No -game specified!" );
 
-	gameDir = game[ 0 ];
+	//gameDir = game[ 0 ];
+	gameDir = "mod_mygame";
 	gameBinDir = gameDir / "bin";
 
 	AddSearchPath( gameDir, "GAME" );
