@@ -44,7 +44,7 @@ public:
 
 	static inline Shader *ToShader( IShader *shader ) { return static_cast< Shader* >( shader ); }
 
-	VkDescriptorPool CreateDescriptorPool() const;
+	virtual VkDescriptorPool CreateDescriptorPool() const;
 	virtual void InitMaterial( Material &material ) = 0;
 
 	virtual void InitMesh( Mesh *mesh ) = 0;

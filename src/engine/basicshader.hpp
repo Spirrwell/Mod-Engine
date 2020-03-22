@@ -8,6 +8,7 @@ class BasicShader : public Shader
 public:
 	using Shader::Shader;
 
+	VkDescriptorPool CreateDescriptorPool() const override;
 	void InitMaterial( Material &material ) override;
 	void InitMesh( Mesh *mesh ) override;
 
@@ -24,6 +25,7 @@ private:
 	enum class Uniforms : size_t
 	{
 		MVP,
+		LightState,
 		Count
 	};
 };

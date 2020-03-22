@@ -5,6 +5,29 @@
 #include "texturesystem.hpp"
 #include "material.hpp"
 
+VkDescriptorPool BasicShader::CreateDescriptorPool() const
+{
+	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
+
+	std::array< VkDescriptorPoolSize, 3 > poolSizes;
+	poolSizes[ 0 ].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[ 0 ].descriptorCount = vulkanSystem->numSwapChainImages;
+	poolSizes[ 1 ].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[ 1 ].descriptorCount = vulkanSystem->numSwapChainImages;
+	poolSizes[ 2 ].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[ 2 ].descriptorCount = vulkanSystem->numSwapChainImages;
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast< uint32_t >( poolSizes.size() );
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = vulkanSystem->numSwapChainImages;
+
+	vulkanSystem->CreateDescriptorPool( &poolInfo, nullptr, &descriptorPool );
+
+	return descriptorPool;
+}
+
 void BasicShader::InitMaterial( Material &material )
 {
 }
@@ -26,9 +49,11 @@ void BasicShader::InitMesh( Mesh *mesh )
 	auto material = mesh->GetMaterial();
 
 	mesh->ubos.resize( (size_t)Uniforms::Count );
-	mesh->ubos[ (size_t)Uniforms::MVP ] = make_unique< UBO >( vulkanSystem, sizeof( MVP ) );
+	mesh->ubos[ (size_t)Uniforms::MVP ] = make_unique< UBO >( vulkanSystem, sizeof( glm::mat4 ) );
+	mesh->ubos[ (size_t)Uniforms::LightState ] = make_unique< UBO >( vulkanSystem, sizeof( glm::vec4 ) );
 
 	auto ubo_mvp = mesh->ubos[ (size_t)Uniforms::MVP ].get();
+	auto ubo_lightState = mesh->ubos[ (size_t)Uniforms::LightState ].get();
 	auto diffuse = material->GetTexture( "diffuse" );
 
 	if ( !diffuse ) {
@@ -37,10 +62,15 @@ void BasicShader::InitMesh( Mesh *mesh )
 
 	for ( uint32_t imageIndex = 0; imageIndex < vulkanSystem->numSwapChainImages; ++imageIndex )
 	{
-		VkDescriptorBufferInfo bufferInfo = {};
-		bufferInfo.buffer = ubo_mvp->uniformBuffer[ imageIndex ];
-		bufferInfo.offset = 0;
-		bufferInfo.range = ubo_mvp->BufferSize();
+		VkDescriptorBufferInfo mvpBufferInfo = {};
+		mvpBufferInfo.buffer = ubo_mvp->uniformBuffer[ imageIndex ];
+		mvpBufferInfo.offset = 0;
+		mvpBufferInfo.range = ubo_mvp->BufferSize();
+
+		VkDescriptorBufferInfo lightStateBufferInfo = {};
+		lightStateBufferInfo.buffer = ubo_lightState->uniformBuffer[ imageIndex ];
+		lightStateBufferInfo.offset = 0;
+		lightStateBufferInfo.range = ubo_lightState->BufferSize();
 
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -50,7 +80,7 @@ void BasicShader::InitMesh( Mesh *mesh )
 			imageInfo.sampler = diffuse->GetSampler();
 		}
 
-		std::array< VkWriteDescriptorSet, 2 > descriptorWrites = {};
+		std::array< VkWriteDescriptorSet, 3 > descriptorWrites = {};
 
 		descriptorWrites[ 0 ].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[ 0 ].dstSet = mesh->descriptorSets[ imageIndex ];
@@ -58,15 +88,23 @@ void BasicShader::InitMesh( Mesh *mesh )
 		descriptorWrites[ 0 ].dstArrayElement = 0;
 		descriptorWrites[ 0 ].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		descriptorWrites[ 0 ].descriptorCount = 1;
-		descriptorWrites[ 0 ].pBufferInfo = &bufferInfo;
+		descriptorWrites[ 0 ].pBufferInfo = &mvpBufferInfo;
 
 		descriptorWrites[ 1 ].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[ 1 ].dstSet = mesh->descriptorSets[ imageIndex ];
 		descriptorWrites[ 1 ].dstBinding = 1;
 		descriptorWrites[ 1 ].dstArrayElement = 0;
-		descriptorWrites[ 1 ].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorWrites[ 1 ].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		descriptorWrites[ 1 ].descriptorCount = 1;
-		descriptorWrites[ 1 ].pImageInfo = &imageInfo;
+		descriptorWrites[ 1 ].pBufferInfo = &lightStateBufferInfo;
+
+		descriptorWrites[ 2 ].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrites[ 2 ].dstSet = mesh->descriptorSets[ imageIndex ];
+		descriptorWrites[ 2 ].dstBinding = 2;
+		descriptorWrites[ 2 ].dstArrayElement = 0;
+		descriptorWrites[ 2 ].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorWrites[ 2 ].descriptorCount = 1;
+		descriptorWrites[ 2 ].pImageInfo = &imageInfo;
 
 		vkUpdateDescriptorSets( vulkanSystem->device, static_cast< uint32_t >( descriptorWrites.size() ), descriptorWrites.data(), 0, nullptr );
 	}
@@ -75,13 +113,26 @@ void BasicShader::InitMesh( Mesh *mesh )
 void BasicShader::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh )
 {
 	auto ubo_mvp = mesh->ubos[ (size_t)Uniforms::MVP ]->uniformBufferAllocation[ imageIndex ];
+	auto ubo_lightState = mesh->ubos[ (size_t)Uniforms::LightState ]->uniformBufferAllocation[ imageIndex ];
+
+	const glm::mat4 modelToClip = mvp.proj * mvp.view * mvp.model;
 
 	if ( ubo_mvp != VK_NULL_HANDLE )
 	{
 		void *pData = nullptr;
 		vulkanSystem->VmaMapMemory( ubo_mvp, &pData );
-			std::memcpy( pData, &mvp, sizeof( mvp ) );
+			std::memcpy( pData, &modelToClip, sizeof( modelToClip ) );
 		vulkanSystem->VmaUnmapMemory( ubo_mvp );
+	}
+
+	const glm::vec4 ambientLight = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	if ( ubo_lightState != VK_NULL_HANDLE )
+	{
+		void *pData = nullptr;
+		vulkanSystem->VmaMapMemory( ubo_lightState, &pData );
+			std::memcpy( pData, &ambientLight, sizeof( ambientLight ) );
+		vulkanSystem->VmaUnmapMemory( ubo_lightState );
 	}
 }
 
@@ -117,23 +168,31 @@ void BasicShader::CreateDescriptorSetLayout()
 {
 	std::vector< VkDescriptorSetLayoutBinding > bindings;
 
-	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-	uboLayoutBinding.binding = 0;
-	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uboLayoutBinding.descriptorCount = 1;
-	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+	VkDescriptorSetLayoutBinding mvpLayoutBinding = {};
+	mvpLayoutBinding.binding = 0;
+	mvpLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	mvpLayoutBinding.descriptorCount = 1;
+	mvpLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	mvpLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+	VkDescriptorSetLayoutBinding lightStateLayoutBinding = {};
+	lightStateLayoutBinding.binding = 1;
+	lightStateLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	lightStateLayoutBinding.descriptorCount = 1;
+	lightStateLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	lightStateLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
 	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-	samplerLayoutBinding.binding = 1;
+	samplerLayoutBinding.binding = 2;
 	samplerLayoutBinding.descriptorCount = 1;
 	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	samplerLayoutBinding.pImmutableSamplers = nullptr;
 	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-	bindings.resize( 2 );
-	bindings[ 0 ] = uboLayoutBinding;
-	bindings[ 1 ] = samplerLayoutBinding;
+	bindings.resize( 3 );
+	bindings[ 0 ] = mvpLayoutBinding;
+	bindings[ 1 ] = lightStateLayoutBinding;
+	bindings[ 2 ] = samplerLayoutBinding;
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
