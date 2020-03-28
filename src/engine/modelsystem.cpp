@@ -158,35 +158,10 @@ IModel *ModelSystem::LoadModel( const std::filesystem::path &relpath, const std:
 
 	for ( unsigned int meshidx = 0; meshidx < pScene->mNumMeshes; ++meshidx )
 	{
-		model->meshes[ meshidx ] = make_unique< Mesh >( vulkanSystem );
-		const aiMesh *pAIMesh = pScene->mMeshes[ meshidx ];
-
-		shared_ptr< std::vector< Vertex > > vertices = std::make_shared< std::vector< Vertex > >( pAIMesh->mNumVertices );
-		shared_ptr< std::vector< uint32_t > > indices = std::make_shared< std::vector< uint32_t > >( pAIMesh->mNumFaces * 3 ); // * 3 because we're triangulating
 		Material *material = nullptr;
 
-		for ( unsigned int v = 0; v < pAIMesh->mNumVertices; ++v )
-		{
-			auto &vertex = vertices->at( v );
-
-			if ( pAIMesh->HasPositions() ) {
-				vertex.position = { pAIMesh->mVertices[ v ].x, -pAIMesh->mVertices[ v ].y, pAIMesh->mVertices[ v ].z };
-			}
-
-			if ( pAIMesh->HasTextureCoords( 0 ) ) {
-				vertex.texCoord = { pAIMesh->mTextureCoords[ 0 ][ v ].x, -pAIMesh->mTextureCoords[ 0 ][ v ].y };
-			}
-
-			if ( pAIMesh->HasNormals() ) {
-				vertex.normal = { pAIMesh->mNormals[ v ].x, pAIMesh->mNormals[ v ].y, pAIMesh->mNormals[ v ].z };
-			}
-		}
-
-		for ( unsigned int face = 0; face < pAIMesh->mNumFaces; ++face )
-		{
-			for ( unsigned int idx = 0; idx < pAIMesh->mFaces[ face ].mNumIndices; ++idx )
-				indices->at( ( face * 3 ) + idx ) = pAIMesh->mFaces[ face ].mIndices[ idx ];
-		}
+		model->meshes[ meshidx ] = make_unique< Mesh >( vulkanSystem );
+		const aiMesh *pAIMesh = pScene->mMeshes[ meshidx ];
 
 		if ( pAIMesh->mMaterialIndex >= 0 )
 		{
@@ -210,6 +185,46 @@ IModel *ModelSystem::LoadModel( const std::filesystem::path &relpath, const std:
 					material = Material::ToMaterial( materialSystem->GetErrorMaterial() );
 				}
 			}
+		}
+
+		if ( !material )
+			return nullptr;
+
+		const VertexLayout vertexLayout = material->GetShader()->GetVertexLayout();
+
+		shared_ptr< VertexArray > vertices = std::make_shared< VertexArray >( vertexLayout );
+		vertices->Resize( pAIMesh->mNumVertices );
+
+		shared_ptr< std::vector< uint32_t > > indices = std::make_shared< std::vector< uint32_t > >( pAIMesh->mNumFaces * 3 ); // * 3 because we're triangulating
+
+		for ( unsigned int v = 0; v < pAIMesh->mNumVertices; ++v )
+		{
+			constexpr glm::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+			if ( pAIMesh->HasPositions() ) {
+				vertices->SetPosition( v, { pAIMesh->mVertices[ v ].x, -pAIMesh->mVertices[ v ].y, pAIMesh->mVertices[ v ].z }, 0 );
+			}
+
+			if ( pAIMesh->HasNormals() ) {
+				vertices->SetNormal( v, { pAIMesh->mNormals[ v ].x, pAIMesh->mNormals[ v ].y, pAIMesh->mNormals[ v ].z }, 0 );
+			}
+
+			if ( pAIMesh->HasVertexColors( 0 ) ) {
+				vertices->SetColor( v, { pAIMesh->mColors[ 0 ][ v ].r, pAIMesh->mColors[ 0 ][ v ].g, pAIMesh->mColors[ 0 ][ v ].b, pAIMesh->mColors[ 0 ][ v ].a  }, 0 );
+			}
+			else {
+				vertices->SetColor( v, defaultColor, 0 );
+			}
+			
+			if ( pAIMesh->HasTextureCoords( 0 ) ) {
+				vertices->SetUV( v, { pAIMesh->mTextureCoords[ 0 ][ v ].x, -pAIMesh->mTextureCoords[ 0 ][ v ].y }, 0 );
+			}
+		}
+
+		for ( unsigned int face = 0; face < pAIMesh->mNumFaces; ++face )
+		{
+			for ( unsigned int idx = 0; idx < pAIMesh->mFaces[ face ].mNumIndices; ++idx )
+				indices->at( ( face * 3 ) + idx ) = pAIMesh->mFaces[ face ].mIndices[ idx ];
 		}
 
 		model->meshes[ meshidx ]->Init( vulkanSystem, vertices, indices, material );

@@ -7,10 +7,19 @@ layout( binding = 0 ) uniform UniformBufferObject
 	mat4 proj;
 } ubo_mvp;
 
-layout ( location = 0 ) in vec3 inPosition;
-layout ( location = 1 ) in vec3 inColor;
+/* Vertex Layout Order:
+	0: Position
+	1: Normal
+	2: Color,
+	3: UV,
+	4: Tangent,
+	5: BiTangent,
+*/
 
-layout ( location = 0 ) out vec3 fragColor;
+layout ( location = 0 ) in vec3 inPosition;
+layout ( location = 1 ) in vec4 inColor;
+
+layout ( location = 0 ) out vec4 fragColor;
 
 void main()
 {

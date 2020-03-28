@@ -8,6 +8,16 @@ class BasicShader : public Shader
 public:
 	using Shader::Shader;
 
+	inline VertexLayout GetVertexLayout() const override {
+		return VertexLayout (
+			{
+				Vertex::Component::Position,
+				Vertex::Component::Color,
+				Vertex::Component::UV
+			}
+		);
+	}
+
 	VkDescriptorPool CreateDescriptorPool() const override;
 	void InitMaterial( Material &material ) override;
 	void InitMesh( Mesh *mesh ) override;

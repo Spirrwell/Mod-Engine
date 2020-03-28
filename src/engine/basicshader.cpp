@@ -138,30 +138,15 @@ void BasicShader::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh 
 
 void BasicShader::InitVertexInputBindingDescriptions()
 {
+	const VertexLayout vertexLayout = GetVertexLayout();
 	vertexInputBindingDescriptions.resize( 1 );
-	vertexInputBindingDescriptions[ 0 ].binding = 0;
-	vertexInputBindingDescriptions[ 0 ].stride = static_cast< uint32_t >( sizeof( Vertex ) );
-	vertexInputBindingDescriptions[ 0 ].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	vertexInputBindingDescriptions[ 0 ] = vertexLayout.ToInputBindingDescription( 0 );
 }
 
 void BasicShader::InitVertexInputAttributeDescriptions()
 {
-	vertexInputAttributeDescriptions.resize( 3 );
-
-	vertexInputAttributeDescriptions[ 0 ].binding = 0;
-	vertexInputAttributeDescriptions[ 0 ].location = 0;
-	vertexInputAttributeDescriptions[ 0 ].format = VK_FORMAT_R32G32B32_SFLOAT;
-	vertexInputAttributeDescriptions[ 0 ].offset = offsetof( Vertex, position );
-
-	vertexInputAttributeDescriptions[ 1 ].binding = 0;
-	vertexInputAttributeDescriptions[ 1 ].location = 1;
-	vertexInputAttributeDescriptions[ 1 ].format = VK_FORMAT_R32G32_SFLOAT;
-	vertexInputAttributeDescriptions[ 1 ].offset = offsetof( Vertex, texCoord );
-
-	vertexInputAttributeDescriptions[ 2 ].binding = 0;
-	vertexInputAttributeDescriptions[ 2 ].location = 2;
-	vertexInputAttributeDescriptions[ 2 ].format = VK_FORMAT_R32G32B32_SFLOAT;
-	vertexInputAttributeDescriptions[ 2 ].offset = offsetof( Vertex, color );
+	const VertexLayout vertexLayout = GetVertexLayout();
+	vertexInputAttributeDescriptions = vertexLayout.ToInputAttributeDescriptions( 0 );
 }
 
 void BasicShader::CreateDescriptorSetLayout()

@@ -22,7 +22,7 @@ Mesh::~Mesh()
 	}
 }
 
-void Mesh::Init( VulkanSystem *vulkanSystem, shared_ptr< std::vector< Vertex > > vertices, shared_ptr< std::vector< uint32_t > > indices, Material *material )
+void Mesh::Init( VulkanSystem *vulkanSystem, shared_ptr< VertexArray > vertices, shared_ptr< std::vector< uint32_t > > indices, Material *material )
 {
 	this->vulkanSystem = vulkanSystem;
 	this->vertices = vertices;
@@ -59,12 +59,12 @@ void Mesh::destroySwapChain()
 
 void Mesh::CreateVertexBuffer()
 {
-	if ( vertices->size() == 0 ) {
+	if ( vertices->GetVertexCount() == 0 ) {
 		return;
 	}
 
-	const VkDeviceSize bufferSize = sizeof( Vertex ) * vertices->size();
-	vertexCount = static_cast< uint32_t >( vertices->size() );
+	const VkDeviceSize bufferSize = vertices->GetVertexBufferSize();
+	vertexCount = static_cast< uint32_t >( vertices->GetVertexCount() );
 
 	VkBuffer stagingBuffer = VK_NULL_HANDLE;
 	VmaAllocation stagingBufferAllocation = VK_NULL_HANDLE;
@@ -74,7 +74,7 @@ void Mesh::CreateVertexBuffer()
 	void *pData = nullptr;
 
 	vulkanSystem->VmaMapMemory( stagingBufferAllocation, &pData );
-		std::memcpy( pData, vertices->data(), static_cast< size_t >( bufferSize ) );
+		std::memcpy( pData, vertices->GetVertexBuffer(), static_cast< size_t >( bufferSize ) );
 	vulkanSystem->VmaUnmapMemory( stagingBufferAllocation );
 
 	vulkanSystem->VmaCreateBuffer( bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VertexBuffer, VertexBufferAllocation );

@@ -212,6 +212,7 @@ project "engine"
 		ENGINE_SOURCE_DIR .. "/thread.hpp",
 		ENGINE_SOURCE_DIR .. "/ubo.cpp",
 		ENGINE_SOURCE_DIR .. "/ubo.hpp",
+		ENGINE_SOURCE_DIR .. "/vertex.cpp",
 		ENGINE_SOURCE_DIR .. "/vertex.hpp",
 		ENGINE_SOURCE_DIR .. "/vpk.cpp",
 		ENGINE_SOURCE_DIR .. "/vpk.hpp",

@@ -15,6 +15,7 @@
 #include "log.hpp"
 #include "baseshadervk.hpp"
 #include "mesh.hpp"
+#include "vertex.hpp"
 
 class RenderSystem;
 class Material;
@@ -43,6 +44,8 @@ public:
 	virtual ~Shader();
 
 	static inline Shader *ToShader( IShader *shader ) { return static_cast< Shader* >( shader ); }
+
+	inline virtual VertexLayout GetVertexLayout() const = 0;
 
 	virtual VkDescriptorPool CreateDescriptorPool() const;
 	virtual void InitMaterial( Material &material ) = 0;

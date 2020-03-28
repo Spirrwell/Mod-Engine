@@ -19,7 +19,7 @@ public:
 
 	static Mesh *ToMesh( IMesh *mesh ) { return static_cast< Mesh* >( mesh ); }
 
-	void Init( VulkanSystem *vulkanSystem, shared_ptr< std::vector< Vertex > > vertices, shared_ptr< std::vector< uint32_t > > indices, Material *material );
+	void Init( VulkanSystem *vulkanSystem, shared_ptr< VertexArray > vertices, shared_ptr< std::vector< uint32_t > > indices, Material *material );
 
 	void onSwapChainResize() override;
 	void destroySwapChain();
@@ -35,7 +35,7 @@ public:
 	void CreateVertexBuffer();
 	void CreateIndexBuffer();
 
-	shared_ptr< std::vector< Vertex > > vertices;
+	shared_ptr< VertexArray > vertices;
 	shared_ptr< std::vector< uint32_t > > indices;
 
 	uint32_t vertexCount = 0;
