@@ -31,6 +31,7 @@ INTERFACES_SOURCE_DIR = "./src/interfaces"
 SHARED_SOURCE_DIR = "./src/shared"
 ENGINE_SOURCE_DIR = "./src/engine"
 GAME_SOURCE_DIR = "./src/game"
+SHADERS_SOURCE_DIR = ENGINE_SOURCE_DIR .. "/shaders"
 
 INTERFACES_SOURCE_FILES = {
 	INTERFACES_SOURCE_DIR .. "/engine/iengine.hpp",
@@ -58,6 +59,13 @@ SHARED_SOURCE_FILES = {
 	SHARED_SOURCE_DIR .. "/renderview.hpp",
 }
 
+SHADER_SOURCE_FILES = {
+	SHADERS_SOURCE_DIR .. "/shader_staticmesh.cpp",
+	SHADERS_SOURCE_DIR .. "/shader_staticmesh.hpp",
+	SHADERS_SOURCE_DIR .. "/shader_wireframe.cpp",
+	SHADERS_SOURCE_DIR .. "/shader_wireframe.hpp"
+}
+
 workspace "ModEngine"
 	architecture "x64"
 	configurations { "Debug", "Release" }
@@ -65,9 +73,10 @@ workspace "ModEngine"
 	location "build"
 	
 	vpaths {
-		{ [ "Interfaces/*" ] = { INTERFACES_SOURCE_DIR .. "/**.hpp", INTERFACES_SOURCE_DIR .. "**.cpp" } },
+		{ [ "Interfaces/*" ] = { INTERFACES_SOURCE_DIR .. "/**.hpp", INTERFACES_SOURCE_DIR .. "/**.cpp" } },
 		{ [ "Shared/Source Files/*" ] = { SHARED_SOURCE_DIR .. "**.cpp" } },
 		{ [ "Shared/Header Files/*" ] = { SHARED_SOURCE_DIR .. "**.hpp" } },
+		{ [ "Shaders/*" ] = { SHADERS_SOURCE_DIR .. "/**.hpp", SHADERS_SOURCE_DIR .. "/**.cpp" } },
 		{ [ "Header Files" ] = { "**.h", "**.hpp" } },
 		{ [ "Source Files" ] = { "**.cpp" } }
 	}
@@ -150,7 +159,8 @@ project "engine"
 	
 	files {
 		SHARED_SOURCE_FILES,
-		INTERFACES_SOURCE_FILES
+		INTERFACES_SOURCE_FILES,
+		SHADER_SOURCE_FILES
 	}
 	
 	files {
@@ -194,10 +204,6 @@ project "engine"
 		ENGINE_SOURCE_DIR .. "/sdlwindow.hpp",
 		ENGINE_SOURCE_DIR .. "/sdlwrapper.cpp",
 		ENGINE_SOURCE_DIR .. "/sdlwrapper.hpp",
-		ENGINE_SOURCE_DIR .. "/shader_staticmesh.cpp",
-		ENGINE_SOURCE_DIR .. "/shader_staticmesh.hpp",
-		ENGINE_SOURCE_DIR .. "/shader_wireframe.cpp",
-		ENGINE_SOURCE_DIR .. "/shader_wireframe.hpp",
 		ENGINE_SOURCE_DIR .. "/shader.cpp",
 		ENGINE_SOURCE_DIR .. "/shader.hpp",
 		ENGINE_SOURCE_DIR .. "/shadersystem.cpp",
@@ -226,6 +232,8 @@ project "engine"
 	}
 	
 	includedirs {
+		ENGINE_SOURCE_DIR,
+		SHADERS_SOURCE_DIR,
 		VULKAN_INCLUDE_DIR
 	}
 	libdirs {
