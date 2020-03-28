@@ -13,7 +13,6 @@
 #include "glm/glm.hpp"
 #include "ubo.hpp"
 #include "log.hpp"
-#include "baseshadervk.hpp"
 #include "mesh.hpp"
 #include "vertex.hpp"
 
