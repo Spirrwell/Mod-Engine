@@ -154,8 +154,6 @@ project "engine"
 	}
 	
 	files {
-		ENGINE_SOURCE_DIR .. "/basicshader.cpp",
-		ENGINE_SOURCE_DIR .. "/basicshader.hpp",
 		ENGINE_SOURCE_DIR .. "/clock.hpp",
 		ENGINE_SOURCE_DIR .. "/commandlinesystem.cpp",
 		ENGINE_SOURCE_DIR .. "/commandlinesystem.hpp",
@@ -196,6 +194,10 @@ project "engine"
 		ENGINE_SOURCE_DIR .. "/sdlwindow.hpp",
 		ENGINE_SOURCE_DIR .. "/sdlwrapper.cpp",
 		ENGINE_SOURCE_DIR .. "/sdlwrapper.hpp",
+		ENGINE_SOURCE_DIR .. "/shader_staticmesh.cpp",
+		ENGINE_SOURCE_DIR .. "/shader_staticmesh.hpp",
+		ENGINE_SOURCE_DIR .. "/shader_wireframe.cpp",
+		ENGINE_SOURCE_DIR .. "/shader_wireframe.hpp",
 		ENGINE_SOURCE_DIR .. "/shader.cpp",
 		ENGINE_SOURCE_DIR .. "/shader.hpp",
 		ENGINE_SOURCE_DIR .. "/shadersystem.cpp",
@@ -216,8 +218,6 @@ project "engine"
 		ENGINE_SOURCE_DIR .. "/vertex.hpp",
 		ENGINE_SOURCE_DIR .. "/vpk.cpp",
 		ENGINE_SOURCE_DIR .. "/vpk.hpp",
-		ENGINE_SOURCE_DIR .. "/wireshader.cpp",
-		ENGINE_SOURCE_DIR .. "/wireshader.hpp",
 	}
 	
 	links {

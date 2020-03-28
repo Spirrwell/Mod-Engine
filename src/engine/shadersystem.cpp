@@ -1,13 +1,11 @@
 #include "shadersystem.hpp"
 #include "engine.hpp"
 #include "shader.hpp"
-#include "basicshader.hpp"
-#include "wireshader.hpp"
 #include "texturesystem.hpp"
 #include "nlohmann/json.hpp"
 
-#include "basicshader.hpp"
-#include "wireshader.hpp"
+#include "shader_staticmesh.hpp"
+#include "shader_wireframe.hpp"
 
 void ShaderSystem::configure( Engine *engine )
 {

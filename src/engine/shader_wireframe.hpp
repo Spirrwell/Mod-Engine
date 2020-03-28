@@ -1,9 +1,9 @@
-#ifndef BASICSHADER_HPP
-#define BASICSHADER_HPP
+#ifndef SHADER_WIREFRAME_HPP
+#define SHADER_WIREFRAME_HPP
 
 #include "shader.hpp"
 
-class Shader_StaticMesh : public Shader
+class Shader_Wireframe : public Shader
 {
 public:
 	using Shader::Shader;
@@ -12,13 +12,11 @@ public:
 		return VertexLayout (
 			{
 				Vertex::Component::Position,
-				Vertex::Component::Color,
-				Vertex::Component::UV
+				Vertex::Component::Color
 			}
 		);
 	}
 
-	VkDescriptorPool CreateDescriptorPool() const override;
 	void InitMaterial( Material &material ) override;
 	void InitMesh( Mesh *mesh ) override;
 
@@ -32,9 +30,8 @@ private:
 	enum class Uniforms : size_t
 	{
 		MVP,
-		LightState,
 		Count
 	};
 };
 
-#endif // BASICSHADER_HPP
+#endif // SHADER_WIREFRAME_HPP

@@ -1,38 +1,15 @@
-#include "basicshader.hpp"
+#include "shader_wireframe.hpp"
 #include "vertex.hpp"
 #include "renderer.hpp"
 #include "glm/gtx/transform.hpp"
-#include "texturesystem.hpp"
 #include "material.hpp"
 
-VkDescriptorPool Shader_StaticMesh::CreateDescriptorPool() const
+void Shader_Wireframe::InitMaterial( Material &material )
 {
-	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
-
-	std::array< VkDescriptorPoolSize, 3 > poolSizes;
-	poolSizes[ 0 ].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[ 0 ].descriptorCount = vulkanSystem->numSwapChainImages;
-	poolSizes[ 1 ].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[ 1 ].descriptorCount = vulkanSystem->numSwapChainImages;
-	poolSizes[ 2 ].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[ 2 ].descriptorCount = vulkanSystem->numSwapChainImages;
-
-	VkDescriptorPoolCreateInfo poolInfo = {};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.poolSizeCount = static_cast< uint32_t >( poolSizes.size() );
-	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = vulkanSystem->numSwapChainImages;
-
-	vulkanSystem->CreateDescriptorPool( &poolInfo, nullptr, &descriptorPool );
-
-	return descriptorPool;
+	
 }
 
-void Shader_StaticMesh::InitMaterial( Material &material )
-{
-}
-
-void Shader_StaticMesh::InitMesh( Mesh *mesh )
+void Shader_Wireframe::InitMesh( Mesh *mesh )
 {
 	mesh->descriptorPool = CreateDescriptorPool();
 	const std::vector< VkDescriptorSetLayout > layouts( vulkanSystem->numSwapChainImages, GetDescriptorSetLayout() );
@@ -46,41 +23,19 @@ void Shader_StaticMesh::InitMesh( Mesh *mesh )
 	mesh->descriptorSets.resize( vulkanSystem->numSwapChainImages );
 	vulkanSystem->AllocateDescriptorSets( &allocInfo, mesh->descriptorSets.data() );
 
-	auto material = mesh->GetMaterial();
-
 	mesh->ubos.resize( (size_t)Uniforms::Count );
-	mesh->ubos[ (size_t)Uniforms::MVP ] = make_unique< UBO >( vulkanSystem, sizeof( glm::mat4 ) );
-	mesh->ubos[ (size_t)Uniforms::LightState ] = make_unique< UBO >( vulkanSystem, sizeof( glm::vec4 ) );
+	mesh->ubos[ (size_t)Uniforms::MVP ] = make_unique< UBO >( vulkanSystem, sizeof( MVP ) );
 
 	auto ubo_mvp = mesh->ubos[ (size_t)Uniforms::MVP ].get();
-	auto ubo_lightState = mesh->ubos[ (size_t)Uniforms::LightState ].get();
-	auto diffuse = material->GetTexture( "diffuse" );
-
-	if ( !diffuse ) {
-		Log::Println( "Failed to load \"diffuse\" texture for shader {}", GetShaderName() );
-	}
 
 	for ( uint32_t imageIndex = 0; imageIndex < vulkanSystem->numSwapChainImages; ++imageIndex )
 	{
-		VkDescriptorBufferInfo mvpBufferInfo = {};
-		mvpBufferInfo.buffer = ubo_mvp->uniformBuffer[ imageIndex ];
-		mvpBufferInfo.offset = 0;
-		mvpBufferInfo.range = ubo_mvp->BufferSize();
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = ubo_mvp->uniformBuffer[ imageIndex ];
+		bufferInfo.offset = 0;
+		bufferInfo.range = ubo_mvp->BufferSize();
 
-		VkDescriptorBufferInfo lightStateBufferInfo = {};
-		lightStateBufferInfo.buffer = ubo_lightState->uniformBuffer[ imageIndex ];
-		lightStateBufferInfo.offset = 0;
-		lightStateBufferInfo.range = ubo_lightState->BufferSize();
-
-		VkDescriptorImageInfo imageInfo = {};
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		if ( diffuse ) {
-			imageInfo.imageView = diffuse->GetImageView();
-			imageInfo.sampler = diffuse->GetSampler();
-		}
-
-		std::array< VkWriteDescriptorSet, 3 > descriptorWrites = {};
+		std::array< VkWriteDescriptorSet, 1 > descriptorWrites = {};
 
 		descriptorWrites[ 0 ].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		descriptorWrites[ 0 ].dstSet = mesh->descriptorSets[ imageIndex ];
@@ -88,83 +43,38 @@ void Shader_StaticMesh::InitMesh( Mesh *mesh )
 		descriptorWrites[ 0 ].dstArrayElement = 0;
 		descriptorWrites[ 0 ].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		descriptorWrites[ 0 ].descriptorCount = 1;
-		descriptorWrites[ 0 ].pBufferInfo = &mvpBufferInfo;
-
-		descriptorWrites[ 1 ].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[ 1 ].dstSet = mesh->descriptorSets[ imageIndex ];
-		descriptorWrites[ 1 ].dstBinding = 1;
-		descriptorWrites[ 1 ].dstArrayElement = 0;
-		descriptorWrites[ 1 ].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorWrites[ 1 ].descriptorCount = 1;
-		descriptorWrites[ 1 ].pBufferInfo = &lightStateBufferInfo;
-
-		descriptorWrites[ 2 ].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		descriptorWrites[ 2 ].dstSet = mesh->descriptorSets[ imageIndex ];
-		descriptorWrites[ 2 ].dstBinding = 2;
-		descriptorWrites[ 2 ].dstArrayElement = 0;
-		descriptorWrites[ 2 ].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		descriptorWrites[ 2 ].descriptorCount = 1;
-		descriptorWrites[ 2 ].pImageInfo = &imageInfo;
+		descriptorWrites[ 0 ].pBufferInfo = &bufferInfo;
 
 		vkUpdateDescriptorSets( vulkanSystem->device, static_cast< uint32_t >( descriptorWrites.size() ), descriptorWrites.data(), 0, nullptr );
 	}
 }
 
-void Shader_StaticMesh::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh )
+void Shader_Wireframe::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh )
 {
 	auto ubo_mvp = mesh->ubos[ (size_t)Uniforms::MVP ]->uniformBufferAllocation[ imageIndex ];
-	auto ubo_lightState = mesh->ubos[ (size_t)Uniforms::LightState ]->uniformBufferAllocation[ imageIndex ];
-
-	const glm::mat4 modelToClip = mvp.proj * mvp.view * mvp.model;
 
 	if ( ubo_mvp != VK_NULL_HANDLE )
 	{
 		void *pData = nullptr;
 		vulkanSystem->VmaMapMemory( ubo_mvp, &pData );
-			std::memcpy( pData, &modelToClip, sizeof( modelToClip ) );
+			std::memcpy( pData, &mvp, sizeof( mvp ) );
 		vulkanSystem->VmaUnmapMemory( ubo_mvp );
-	}
-
-	const glm::vec4 ambientLight = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-	if ( ubo_lightState != VK_NULL_HANDLE )
-	{
-		void *pData = nullptr;
-		vulkanSystem->VmaMapMemory( ubo_lightState, &pData );
-			std::memcpy( pData, &ambientLight, sizeof( ambientLight ) );
-		vulkanSystem->VmaUnmapMemory( ubo_lightState );
 	}
 }
 
-void Shader_StaticMesh::CreateDescriptorSetLayout()
+void Shader_Wireframe::CreateDescriptorSetLayout()
 {
 	std::vector< VkDescriptorSetLayoutBinding > bindings;
 
-	VkDescriptorSetLayoutBinding mvpLayoutBinding = {};
-	mvpLayoutBinding.binding = 0;
-	mvpLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	mvpLayoutBinding.descriptorCount = 1;
-	mvpLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	mvpLayoutBinding.pImmutableSamplers = nullptr; // Optional
+	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
-	VkDescriptorSetLayoutBinding lightStateLayoutBinding = {};
-	lightStateLayoutBinding.binding = 1;
-	lightStateLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	lightStateLayoutBinding.descriptorCount = 1;
-	lightStateLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	lightStateLayoutBinding.pImmutableSamplers = nullptr; // Optional
-
-	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-	samplerLayoutBinding.binding = 2;
-	samplerLayoutBinding.descriptorCount = 1;
-	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	samplerLayoutBinding.pImmutableSamplers = nullptr;
-	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	bindings.resize( 3 );
-	bindings[ 0 ] = mvpLayoutBinding;
-	bindings[ 1 ] = lightStateLayoutBinding;
-	bindings[ 2 ] = samplerLayoutBinding;
+	bindings.resize( 1 );
+	bindings[ 0 ] = uboLayoutBinding;
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -174,7 +84,7 @@ void Shader_StaticMesh::CreateDescriptorSetLayout()
 	vulkanSystem->CreateDescriptorSetLayout( &layoutInfo, nullptr, &descriptorSetLayout );
 }
 
-void Shader_StaticMesh::CreateGraphicsPipelineLayout()
+void Shader_Wireframe::CreateGraphicsPipelineLayout()
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -186,7 +96,7 @@ void Shader_StaticMesh::CreateGraphicsPipelineLayout()
 	vulkanSystem->CreatePipelineLayout( &pipelineLayoutInfo, nullptr, &pipelineLayout );
 }
 
-void Shader_StaticMesh::CreateGraphicsPipeline()
+void Shader_Wireframe::CreateGraphicsPipeline()
 {
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
 	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -242,10 +152,9 @@ void Shader_StaticMesh::CreateGraphicsPipeline()
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE;
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-	//rasterizer.polygonMode = VK_POLYGON_MODE_LINE;
+	rasterizer.polygonMode = VK_POLYGON_MODE_LINE;
 	rasterizer.lineWidth = 1.0f;
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT; // TODO: Revisit this
+	rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT; // TODO: Revisit this
 	//rasterizer.cullMode = VK_CULL_MODE_NONE;
 	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE; // TODO: Revisit this
 	rasterizer.depthBiasEnable = VK_FALSE;
