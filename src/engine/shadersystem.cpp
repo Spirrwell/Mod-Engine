@@ -55,8 +55,6 @@ void ShaderSystem::CreateShader( const std::string &shaderName, ResourcePool *re
 	auto resource = ResourcePool::createResource< T, Shader >( ResourceInfo{ shaderName }, vulkanSystem, shaderName );
 	auto shader = resource->resource.get();
 
-	shader->InitVertexInputBindingDescriptions();
-	shader->InitVertexInputAttributeDescriptions();
 	shader->CreateDescriptorSetLayout();
 	shader->CreateShaderModules( fileSystem );
 	shader->CreateGraphicsPipelineLayout();

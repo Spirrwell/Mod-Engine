@@ -68,8 +68,6 @@ protected:
 	VkPipelineLayout GetPipelineLayout() const { return pipelineLayout; }
 	VkPipeline GetPipeline() const { return pipeline; }
 
-	virtual void InitVertexInputBindingDescriptions() = 0;
-	virtual void InitVertexInputAttributeDescriptions() = 0;
 	virtual void CreateDescriptorSetLayout() = 0;
 	virtual void CreateGraphicsPipelineLayout() = 0;
 	virtual void CreateGraphicsPipeline() = 0;
@@ -82,9 +80,6 @@ protected:
 	VkShaderModule shaderModules[ static_cast< size_t >( ShaderType::Max ) ] = { VK_NULL_HANDLE, VK_NULL_HANDLE };
 	VkPipelineLayout pipelineLayout = VK_NULL_HANDLE;
 	VkPipeline pipeline = VK_NULL_HANDLE;
-
-	std::vector< VkVertexInputBindingDescription > vertexInputBindingDescriptions;
-	std::vector< VkVertexInputAttributeDescription > vertexInputAttributeDescriptions;
 
 private:
 	const std::string shaderName;

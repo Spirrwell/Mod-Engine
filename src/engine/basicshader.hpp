@@ -24,9 +24,6 @@ public:
 
 	void Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh ) override;
 
-	void InitVertexInputBindingDescriptions() override;
-	void InitVertexInputAttributeDescriptions() override;
-
 	void CreateDescriptorSetLayout() override;
 	void CreateGraphicsPipelineLayout() override;
 	void CreateGraphicsPipeline() override;

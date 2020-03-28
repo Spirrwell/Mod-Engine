@@ -62,19 +62,6 @@ void WireShader::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh )
 	}
 }
 
-void WireShader::InitVertexInputBindingDescriptions()
-{
-	const VertexLayout vertexLayout = GetVertexLayout();
-	vertexInputBindingDescriptions.resize( 1 );
-	vertexInputBindingDescriptions[ 0 ] = vertexLayout.ToInputBindingDescription( 0 );
-}
-
-void WireShader::InitVertexInputAttributeDescriptions()
-{
-	const VertexLayout vertexLayout = GetVertexLayout();
-	vertexInputAttributeDescriptions = vertexLayout.ToInputAttributeDescriptions( 0 );
-}
-
 void WireShader::CreateDescriptorSetLayout()
 {
 	std::vector< VkDescriptorSetLayoutBinding > bindings;
@@ -125,13 +112,17 @@ void WireShader::CreateGraphicsPipeline()
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+	const VertexLayout vertexLayout = GetVertexLayout();
+	VkVertexInputBindingDescription bindingDescription = vertexLayout.ToInputBindingDescription( 0 );
+	std::vector< VkVertexInputAttributeDescription > attribDescriptions = vertexLayout.ToInputAttributeDescriptions( 0 );
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = static_cast< uint32_t >( vertexInputBindingDescriptions.size() );
-	vertexInputInfo.pVertexBindingDescriptions = vertexInputBindingDescriptions.data();
+	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
 
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast< uint32_t >( vertexInputAttributeDescriptions.size() );
-	vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributeDescriptions.data();
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast< uint32_t >( attribDescriptions.size() );
+	vertexInputInfo.pVertexAttributeDescriptions = attribDescriptions.data();
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
