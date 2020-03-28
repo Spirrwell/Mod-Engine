@@ -5,7 +5,7 @@
 #include "texturesystem.hpp"
 #include "material.hpp"
 
-VkDescriptorPool BasicShader::CreateDescriptorPool() const
+VkDescriptorPool Shader_StaticMesh::CreateDescriptorPool() const
 {
 	VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 
@@ -28,11 +28,11 @@ VkDescriptorPool BasicShader::CreateDescriptorPool() const
 	return descriptorPool;
 }
 
-void BasicShader::InitMaterial( Material &material )
+void Shader_StaticMesh::InitMaterial( Material &material )
 {
 }
 
-void BasicShader::InitMesh( Mesh *mesh )
+void Shader_StaticMesh::InitMesh( Mesh *mesh )
 {
 	mesh->descriptorPool = CreateDescriptorPool();
 	const std::vector< VkDescriptorSetLayout > layouts( vulkanSystem->numSwapChainImages, GetDescriptorSetLayout() );
@@ -110,7 +110,7 @@ void BasicShader::InitMesh( Mesh *mesh )
 	}
 }
 
-void BasicShader::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh )
+void Shader_StaticMesh::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh )
 {
 	auto ubo_mvp = mesh->ubos[ (size_t)Uniforms::MVP ]->uniformBufferAllocation[ imageIndex ];
 	auto ubo_lightState = mesh->ubos[ (size_t)Uniforms::LightState ]->uniformBufferAllocation[ imageIndex ];
@@ -136,7 +136,7 @@ void BasicShader::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh 
 	}
 }
 
-void BasicShader::CreateDescriptorSetLayout()
+void Shader_StaticMesh::CreateDescriptorSetLayout()
 {
 	std::vector< VkDescriptorSetLayoutBinding > bindings;
 
@@ -174,7 +174,7 @@ void BasicShader::CreateDescriptorSetLayout()
 	vulkanSystem->CreateDescriptorSetLayout( &layoutInfo, nullptr, &descriptorSetLayout );
 }
 
-void BasicShader::CreateGraphicsPipelineLayout()
+void Shader_StaticMesh::CreateGraphicsPipelineLayout()
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -186,7 +186,7 @@ void BasicShader::CreateGraphicsPipelineLayout()
 	vulkanSystem->CreatePipelineLayout( &pipelineLayoutInfo, nullptr, &pipelineLayout );
 }
 
-void BasicShader::CreateGraphicsPipeline()
+void Shader_StaticMesh::CreateGraphicsPipeline()
 {
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
 	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

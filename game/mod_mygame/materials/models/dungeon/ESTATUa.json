@@ -1,5 +1,5 @@
 {
-	"shader": "BasicShader",
+	"shader": "StaticMesh",
 	"texture": {
 		"diffuse": "textures/models/dungeon/steppe_grass_dirt_33.dds.png"
 	}

@@ -3,7 +3,7 @@
 
 #include "shader.hpp"
 
-class WireShader : public Shader
+class Shader_Wireframe : public Shader
 {
 public:
 	using Shader::Shader;

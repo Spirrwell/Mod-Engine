@@ -1,5 +1,5 @@
 {
-	"shader": "BasicShader",
+	"shader": "StaticMesh",
 	"texture": {
 		"diffuse": "textures/models/dungeon/temp_road.dds.png"
 	}

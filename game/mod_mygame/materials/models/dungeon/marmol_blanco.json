@@ -1,5 +1,5 @@
 {
-	"shader": "BasicShader",
+	"shader": "StaticMesh",
 	"texture": {
 		"diffuse": "textures/models/dungeon/medit_cliff_grass.dds.png"
 	}

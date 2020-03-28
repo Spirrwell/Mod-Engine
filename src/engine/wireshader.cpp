@@ -4,12 +4,12 @@
 #include "glm/gtx/transform.hpp"
 #include "material.hpp"
 
-void WireShader::InitMaterial( Material &material )
+void Shader_Wireframe::InitMaterial( Material &material )
 {
 	
 }
 
-void WireShader::InitMesh( Mesh *mesh )
+void Shader_Wireframe::InitMesh( Mesh *mesh )
 {
 	mesh->descriptorPool = CreateDescriptorPool();
 	const std::vector< VkDescriptorSetLayout > layouts( vulkanSystem->numSwapChainImages, GetDescriptorSetLayout() );
@@ -49,7 +49,7 @@ void WireShader::InitMesh( Mesh *mesh )
 	}
 }
 
-void WireShader::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh )
+void Shader_Wireframe::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh )
 {
 	auto ubo_mvp = mesh->ubos[ (size_t)Uniforms::MVP ]->uniformBufferAllocation[ imageIndex ];
 
@@ -62,7 +62,7 @@ void WireShader::Update( const uint32_t imageIndex, const MVP &mvp, Mesh *mesh )
 	}
 }
 
-void WireShader::CreateDescriptorSetLayout()
+void Shader_Wireframe::CreateDescriptorSetLayout()
 {
 	std::vector< VkDescriptorSetLayoutBinding > bindings;
 
@@ -84,7 +84,7 @@ void WireShader::CreateDescriptorSetLayout()
 	vulkanSystem->CreateDescriptorSetLayout( &layoutInfo, nullptr, &descriptorSetLayout );
 }
 
-void WireShader::CreateGraphicsPipelineLayout()
+void Shader_Wireframe::CreateGraphicsPipelineLayout()
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -96,7 +96,7 @@ void WireShader::CreateGraphicsPipelineLayout()
 	vulkanSystem->CreatePipelineLayout( &pipelineLayoutInfo, nullptr, &pipelineLayout );
 }
 
-void WireShader::CreateGraphicsPipeline()
+void Shader_Wireframe::CreateGraphicsPipeline()
 {
 	VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
 	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

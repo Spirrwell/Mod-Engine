@@ -30,8 +30,8 @@ void ShaderSystem::LoadShaders()
 	if ( !resourcePool )
 		engine->Error( "[ShaderSystem]Failed to acquire global resource pool!" );
 
-	CreateShader< BasicShader >( "BasicShader", resourcePool );
-	CreateShader< WireShader >( "WireShader", resourcePool );
+	CreateShader< Shader_StaticMesh >( "StaticMesh", resourcePool );
+	CreateShader< Shader_Wireframe >( "Wireframe", resourcePool );
 }
 
 IShader *ShaderSystem::FindShader( const std::string &shaderName ) const

@@ -3,7 +3,7 @@
 
 #include "shader.hpp"
 
-class BasicShader : public Shader
+class Shader_StaticMesh : public Shader
 {
 public:
 	using Shader::Shader;
