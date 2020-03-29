@@ -128,7 +128,7 @@ IModel *ModelSystem::LoadModel( const std::filesystem::path &relpath, const std:
 	Assimp::Importer Importer;
 	Importer.SetIOHandler( new assimpIOSystem( fileSystem, pathid ) );
 
-	const aiScene *pScene = Importer.ReadFile( relpath.string(), aiProcess_Triangulate | aiProcess_MakeLeftHanded );
+	const aiScene *pScene = Importer.ReadFile( relpath.string(), aiProcess_Triangulate | aiProcess_MakeLeftHanded | aiProcess_GenNormals | aiProcess_CalcTangentSpace );
 	if ( !pScene )
 		engine->Error( fmt::format( "Importer.ReadFile failed: {}", Importer.GetErrorString() ) );
 
@@ -218,6 +218,11 @@ IModel *ModelSystem::LoadModel( const std::filesystem::path &relpath, const std:
 			
 			if ( pAIMesh->HasTextureCoords( 0 ) ) {
 				vertices->SetUV( v, { pAIMesh->mTextureCoords[ 0 ][ v ].x, -pAIMesh->mTextureCoords[ 0 ][ v ].y }, 0 );
+			}
+
+			if ( pAIMesh->HasTangentsAndBitangents() ) {
+				vertices->SetTangent( v, { pAIMesh->mTangents[ v ].x, -pAIMesh->mTangents[ v ].y, pAIMesh->mTangents[ v ].z }, 0 );
+				vertices->SetBiTangent( v, { pAIMesh->mBitangents[ v ].x, -pAIMesh->mBitangents[ v ].y, pAIMesh->mBitangents[ v ].z }, 0 );
 			}
 		}
 
