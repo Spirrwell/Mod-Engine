@@ -56,9 +56,9 @@ void Engine::Init()
 	textureSystem = MakeSystem< TextureSystem >();
 	shaderSystem = MakeSystem< ShaderSystem >();
 	materialSystem = MakeSystem< MaterialSystem >();
+	meshSystem = MakeSystem< MeshSystem >();
 	renderSystem = MakeSystem< RenderSystem >();
 	inputSystem = MakeSystem< InputSystem >();
-	meshSystem = MakeSystem< MeshSystem >();
 	modelSystem = MakeSystem< ModelSystem >();
 
 	// Create global resource pool for default assets to be loaded to

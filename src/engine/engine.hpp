@@ -20,9 +20,9 @@
 #include "texturesystem.hpp"
 #include "shadersystem.hpp"
 #include "materialsystem.hpp"
+#include "meshsystem.hpp"
 #include "rendersystem.hpp"
 #include "inputsystem.hpp"
-#include "meshsystem.hpp"
 #include "modelsystem.hpp"
 
 class ResourcePool;
@@ -128,9 +128,9 @@ private:
 	unique_ptr< TextureSystem > textureSystem;
 	unique_ptr< ShaderSystem > shaderSystem;
 	unique_ptr< MaterialSystem > materialSystem;
+	unique_ptr< MeshSystem > meshSystem;
 	unique_ptr< RenderSystem > renderSystem;
 	unique_ptr< InputSystem > inputSystem;
-	unique_ptr< MeshSystem > meshSystem;
 	unique_ptr< ModelSystem > modelSystem;
 	std::vector< unique_ptr< ResourcePool > > resourcePools;
 

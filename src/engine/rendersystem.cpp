@@ -13,8 +13,9 @@ void RenderSystem::configure( Engine *engine )
 	EngineSystem::configure( engine );
 
 	vulkanSystem = engine->GetVulkanSystem();
-	materialSystem = engine->GetMaterialSystem();
 	shaderSystem = engine->GetShaderSystem();
+	materialSystem = engine->GetMaterialSystem();
+	meshSystem = engine->GetMeshSystem();
 
 	commandBuffers.resize( vulkanSystem->numSwapChainImages );
 
@@ -50,8 +51,9 @@ void RenderSystem::unconfigure( Engine *engine )
 		commandBuffers.clear();
 	}
 
-	shaderSystem = nullptr;
+	meshSystem = nullptr;
 	materialSystem = nullptr;
+	shaderSystem = nullptr;
 	vulkanSystem = nullptr;
 
 	EngineSystem::unconfigure( engine );
@@ -80,7 +82,10 @@ void RenderSystem::DrawModel( IModel *model, const glm::mat4 &modelMat )
 void RenderSystem::NotifyWindowResized( uint32_t width, uint32_t height )
 {
 	vulkanSystem->NotifyWindowResized( width, height );
-	//shaderSystem->NotifyWindowResized();
+	ClearRenderLists();
+
+	activeRenderList.resize( vulkanSystem->numSwapChainImages );
+	lastRenderList.resize( vulkanSystem->numSwapChainImages );
 }
 
 void RenderSystem::NotifyWindowMaximized()
@@ -118,6 +123,7 @@ void RenderSystem::BeginFrame()
 
 void RenderSystem::EndFrame()
 {
+	meshSystem->DestroyDeadMeshes();
 	isReadyToDraw = false;
 }
 

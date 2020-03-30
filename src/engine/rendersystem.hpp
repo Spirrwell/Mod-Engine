@@ -8,6 +8,7 @@
 #include "vulkansystem.hpp"
 #include "mesh.hpp"
 #include "renderlist.hpp"
+#include "meshsystem.hpp"
 
 #include <vector>
 
@@ -52,8 +53,10 @@ private:
 	void ClearRenderLists();
 
 	VulkanSystem *vulkanSystem = nullptr;
-	MaterialSystem *materialSystem = nullptr;
+
 	ShaderSystem *shaderSystem = nullptr;
+	MaterialSystem *materialSystem = nullptr;
+	MeshSystem *meshSystem = nullptr;
 
 	RenderView renderView = {};
 

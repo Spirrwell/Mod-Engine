@@ -5,10 +5,11 @@
 #include "memory.hpp"
 #include "mesh.hpp"
 #include "vulkansystem.hpp"
-#include "rendersystem.hpp"
 
+#include <set>
 #include <vector>
 #include <limits>
+#include <mutex>
 
 class MeshSystem : public EngineSystem
 {
@@ -18,13 +19,20 @@ public:
 
 	Mesh *CreateMesh();
 
+	// Adds mesh to destroy list
 	void DestroyMesh( Mesh *mesh );
+
+	// Destroys meshes in destroy list and re-sets mesh indices
+	void DestroyDeadMeshes();
 
 private:
 
 	std::vector< unique_ptr< Mesh > > meshes;
+	std::set< size_t > destroyList;
+
+	std::mutex meshMutex;
+
 	VulkanSystem *vulkanSystem = nullptr;
-	RenderSystem *renderSystem = nullptr;
 };
 
 #endif // MESHSYSTEM_HPP
