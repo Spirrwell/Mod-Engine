@@ -7,17 +7,12 @@
 #include "memory.hpp"
 #include "vulkansystem.hpp"
 #include "mesh.hpp"
+#include "renderlist.hpp"
 
 #include <vector>
 
 class MaterialSystem;
 class ShaderSystem;
-
-struct RenderInfo
-{
-	Mesh *mesh = nullptr;
-	glm::mat4 modelMat;
-};
 
 class RenderSystem : public IRenderSystem, public EngineSystem
 {
@@ -44,27 +39,33 @@ public:
 	MaterialSystem *GetMaterialSystem() const { return materialSystem; }
 	ShaderSystem *GetShaderSystem() const { return shaderSystem; }
 
-	void QueueRender( RenderInfo renderInfo ) { renderInfos.push_back( renderInfo ); }
+	void QueueRender( const RenderInfo &renderInfo ) { activeRenderList[ imageIndex ].insert( renderInfo ); }
 
 	void BeginFrame();
 	void EndFrame();
 	void DrawScene();
 
+	void UpdateUBOs();
 	void RecordCommandBuffer();
 
 private:
+	void ClearRenderLists();
+
 	VulkanSystem *vulkanSystem = nullptr;
 	MaterialSystem *materialSystem = nullptr;
 	ShaderSystem *shaderSystem = nullptr;
 
 	RenderView renderView = {};
 
-	std::vector< RenderInfo > renderInfos;
+	std::vector< RenderList > activeRenderList;
+	std::vector< RenderList > lastRenderList;
+
 	std::vector< VkCommandBuffer > commandBuffers;
 
 	uint32_t imageIndex = 0;
 	uint32_t currentFrame = 0;
 
+	bool imageAcquireNeeded = false;
 	bool isReadyToDraw = false;
 	bool isMinimized = false;
 };

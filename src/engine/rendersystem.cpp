@@ -28,6 +28,14 @@ void RenderSystem::configure( Engine *engine )
 		engine->Error( "[Vulkan]Failed to allocate command buffers" );
 	}
 
+	if ( vkAcquireNextImageKHR( vulkanSystem->device, vulkanSystem->swapChainKHR, std::numeric_limits< uint64_t >::max(), vulkanSystem->imageAvailableSemaphores[ currentFrame ], VK_NULL_HANDLE, &imageIndex ) != VK_SUCCESS ) {
+		Log::PrintlnWarn( "[Vulkan]Failed to acquire swap chain image" );
+		imageAcquireNeeded = true;
+	}
+
+	activeRenderList.resize( vulkanSystem->numSwapChainImages );
+	lastRenderList.resize( vulkanSystem->numSwapChainImages );
+
 	const float aspect = ( float )vulkanSystem->swapChainExtent.width / ( float )vulkanSystem->swapChainExtent.height;
 	renderView.viewMatrix = glm::mat4( 1.0f );
 	renderView.projectionMatrix = glm::perspective( glm::radians( 70.0f ), aspect, 0.01f, 10000.0f );
@@ -88,14 +96,21 @@ void RenderSystem::NotifyWindowMinimized()
 void RenderSystem::BeginFrame()
 {
 	if ( isMinimized ) {
+		activeRenderList[ imageIndex ].clear();
 		return;
 	}
 
-	vkWaitForFences( vulkanSystem->device, 1, &vulkanSystem->inFlightFences[ currentFrame ], VK_TRUE, std::numeric_limits< uint64_t >::max() );
+	if ( imageAcquireNeeded )
+	{
+		vkWaitForFences( vulkanSystem->device, 1, &vulkanSystem->inFlightFences[ currentFrame ], VK_TRUE, std::numeric_limits< uint64_t >::max() );
 
-	if ( vkAcquireNextImageKHR( vulkanSystem->device, vulkanSystem->swapChainKHR, std::numeric_limits< uint64_t >::max(), vulkanSystem->imageAvailableSemaphores[ currentFrame ], VK_NULL_HANDLE, &imageIndex ) != VK_SUCCESS ) {
-		Log::PrintlnWarn( "[Vulkan]Failed to acquire swap chain image" );
-		return;
+		if ( vkAcquireNextImageKHR( vulkanSystem->device, vulkanSystem->swapChainKHR, std::numeric_limits< uint64_t >::max(), vulkanSystem->imageAvailableSemaphores[ currentFrame ], VK_NULL_HANDLE, &imageIndex ) != VK_SUCCESS ) {
+			Log::PrintlnWarn( "[Vulkan]Failed to acquire swap chain image" );
+			ClearRenderLists();
+			return;
+		}
+
+		imageAcquireNeeded = false;
 	}
 
 	isReadyToDraw = true;
@@ -103,7 +118,6 @@ void RenderSystem::BeginFrame()
 
 void RenderSystem::EndFrame()
 {
-	renderInfos.clear();
 	isReadyToDraw = false;
 }
 
@@ -113,8 +127,11 @@ void RenderSystem::DrawScene()
 		return;
 	}
 
+	UpdateUBOs();
+
 	// Record Command Buffer
-	RecordCommandBuffer();
+	if ( activeRenderList[ imageIndex ] != lastRenderList[ imageIndex ] )
+		RecordCommandBuffer();
 
 	VkSemaphore waitSemaphores[] = { vulkanSystem->imageAvailableSemaphores[ currentFrame ] };
 	VkSubmitInfo submitInfo = {};
@@ -151,12 +168,40 @@ void RenderSystem::DrawScene()
 		Log::PrintlnWarn( "[Vulkan]Queue present failed!" );
 		return;
 	}
+
+	lastRenderList[ imageIndex ] = activeRenderList[ imageIndex ];
+	activeRenderList[ imageIndex ].clear();
 		
 	currentFrame = ( currentFrame + 1 ) % MAX_FRAMES_IN_FLIGHT;
+
+	vkWaitForFences( vulkanSystem->device, 1, &vulkanSystem->inFlightFences[ currentFrame ], VK_TRUE, std::numeric_limits< uint64_t >::max() );
+
+	if ( vkAcquireNextImageKHR( vulkanSystem->device, vulkanSystem->swapChainKHR, std::numeric_limits< uint64_t >::max(), vulkanSystem->imageAvailableSemaphores[ currentFrame ], VK_NULL_HANDLE, &imageIndex ) != VK_SUCCESS ) {
+		Log::PrintlnWarn( "[Vulkan]Failed to acquire swap chain image" );
+		imageAcquireNeeded = true;
+	}
+}
+
+void RenderSystem::UpdateUBOs()
+{
+	for ( const auto &renderInfo : activeRenderList[ imageIndex ] )
+	{
+		auto mesh = renderInfo.mesh;
+		auto material = Material::ToMaterial( mesh->GetMaterial() );
+		auto shader = material->GetShader();
+		MVP mvp = {
+			renderInfo.modelMat,
+			renderView.viewMatrix,
+			renderView.projectionMatrix
+		};
+
+		shader->Update( imageIndex, mvp, mesh );
+	}
 }
 
 void RenderSystem::RecordCommandBuffer()
 {
+	Log::PrintlnColor( fmt::color::blue, "Recording command buffer!" );
 	auto &commandBuffer = commandBuffers[ imageIndex ];
 
 	VkCommandBufferBeginInfo beginInfo = {};
@@ -183,7 +228,7 @@ void RenderSystem::RecordCommandBuffer()
 	renderPassInfo.pClearValues = clearValues.data();
 
 	vkCmdBeginRenderPass( commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE );
-	for ( RenderInfo &renderInfo : renderInfos )
+	for ( const auto &renderInfo : activeRenderList[ imageIndex ] )
 	{
 		const auto mesh = renderInfo.mesh;
 
@@ -196,13 +241,7 @@ void RenderSystem::RecordCommandBuffer()
 		if ( VertexBuffer != VK_NULL_HANDLE ) {
 			auto material = Material::ToMaterial( mesh->GetMaterial() );
 			auto shader = material->GetShader();
-			MVP mvp = {
-				renderInfo.modelMat,
-				renderView.viewMatrix,
-				renderView.projectionMatrix
-			};
 
-			shader->Update( imageIndex, mvp, mesh );
 			vkCmdBindPipeline( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->GetPipeline() );
 			vkCmdBindDescriptorSets( commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader->GetPipelineLayout(), 0, 1, &mesh->descriptorSets[ imageIndex ], 0, nullptr );
 
@@ -224,4 +263,12 @@ void RenderSystem::RecordCommandBuffer()
 	if ( vkEndCommandBuffer( commandBuffer ) != VK_SUCCESS ) {
 		engine->Error( "[Vulkan]Failed to create command buffers" );
 	}
+}
+
+void RenderSystem::ClearRenderLists()
+{
+	for ( auto &renderList : activeRenderList )
+		renderList.clear();
+	for ( auto &renderList : lastRenderList )
+		renderList.clear();
 }

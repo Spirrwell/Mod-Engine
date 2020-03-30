@@ -194,8 +194,7 @@ project "engine"
 		ENGINE_SOURCE_DIR .. "/modulesystem.cpp",
 		ENGINE_SOURCE_DIR .. "/modulesystem.hpp",
 		ENGINE_SOURCE_DIR .. "/mount.hpp",
-		ENGINE_SOURCE_DIR .. "/vulkansystem.cpp",
-		ENGINE_SOURCE_DIR .. "/vulkansystem.hpp",
+		ENGINE_SOURCE_DIR .. "/renderlist.hpp",
 		ENGINE_SOURCE_DIR .. "/renderview.hpp",
 		ENGINE_SOURCE_DIR .. "/resource.hpp",
 		ENGINE_SOURCE_DIR .. "/resourcepool.cpp",
@@ -226,6 +225,8 @@ project "engine"
 		ENGINE_SOURCE_DIR .. "/vertex.hpp",
 		ENGINE_SOURCE_DIR .. "/vpk.cpp",
 		ENGINE_SOURCE_DIR .. "/vpk.hpp",
+		ENGINE_SOURCE_DIR .. "/vulkansystem.cpp",
+		ENGINE_SOURCE_DIR .. "/vulkansystem.hpp"
 	}
 	
 	links {
