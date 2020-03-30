@@ -9,7 +9,7 @@
 #include "glm/gtx/string_cast.hpp"
 #include "stb_image.h"
 #include "nlohmann/json.hpp"
-#include "renderer.hpp"
+#include "rendersystem.hpp"
 #include "shadersystem.hpp"
 #include "texturesystem.hpp"
 

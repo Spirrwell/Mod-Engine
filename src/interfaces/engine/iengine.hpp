@@ -2,7 +2,7 @@
 #define IENGINE_HPP
 
 #include "engine/ilogengine.hpp"
-#include "engine/irenderer.hpp"
+#include "engine/irendersystem.hpp"
 #include "engine/iinputsystem.hpp"
 #include "engine/imodelsystem.hpp"
 #include "engine/iresourcepool.hpp"

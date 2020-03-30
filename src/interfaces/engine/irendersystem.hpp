@@ -1,5 +1,5 @@
-#ifndef IRENDERER_HPP
-#define IRENDERER_HPP
+#ifndef IRENDERSYSTEM_HPP
+#define IRENDERSYSTEM_HPP
 
 #include "glm/glm.hpp"
 #include "renderview.hpp"
@@ -20,4 +20,4 @@ public:
 	virtual void DrawModel( IModel *model, const glm::mat4 &modelMat ) = 0;
 };
 
-#endif // IRENDERER_HPP
+#endif // IRENDERSYSTEM_HPP

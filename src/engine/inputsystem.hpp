@@ -79,7 +79,7 @@ public:
 	bool IsButtonJustPressed( ButtonIndex buttonIndex ) override;
 
 private:
-	RenderSystem *renderer = nullptr;
+	RenderSystem *renderSystem = nullptr;
 
 	std::vector< SDL_GameController* > gameControllers;
 	std::vector< ButtonCode* > buttonCodes;

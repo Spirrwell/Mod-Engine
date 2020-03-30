@@ -56,8 +56,9 @@ void Engine::Init()
 	textureSystem = MakeSystem< TextureSystem >();
 	shaderSystem = MakeSystem< ShaderSystem >();
 	materialSystem = MakeSystem< MaterialSystem >();
-	renderer = MakeSystem< RenderSystem >();
+	renderSystem = MakeSystem< RenderSystem >();
 	inputSystem = MakeSystem< InputSystem >();
+	meshSystem = MakeSystem< MeshSystem >();
 	modelSystem = MakeSystem< ModelSystem >();
 
 	// Create global resource pool for default assets to be loaded to
@@ -124,9 +125,9 @@ void Engine::Run()
 		if ( activeGame )
 			activeGame->tick( dt );
 
-		renderer->BeginFrame();
-		renderer->DrawScene();
-		renderer->EndFrame();
+		renderSystem->BeginFrame();
+		renderSystem->DrawScene();
+		renderSystem->EndFrame();
 	}
 }
 

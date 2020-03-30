@@ -16,12 +16,13 @@
 #include "commandlinesystem.hpp"
 #include "filesystem.hpp"
 #include "modulesystem.hpp"
-#include "inputsystem.hpp"
 #include "vulkansystem.hpp"
 #include "texturesystem.hpp"
 #include "shadersystem.hpp"
 #include "materialsystem.hpp"
-#include "renderer.hpp"
+#include "rendersystem.hpp"
+#include "inputsystem.hpp"
+#include "meshsystem.hpp"
 #include "modelsystem.hpp"
 
 class ResourcePool;
@@ -88,8 +89,9 @@ public:
 	TextureSystem *GetTextureSystem() const { return CheckSystem( textureSystem.get() ); }
 	ShaderSystem *GetShaderSystem() const { return CheckSystem( shaderSystem.get() ); }
 	MaterialSystem *GetMaterialSystem() const { return CheckSystem( materialSystem.get() ); }
-	RenderSystem *GetRenderSystem() const { return CheckSystem( renderer.get() ); }
+	RenderSystem *GetRenderSystem() const { return CheckSystem( renderSystem.get() ); }
 	InputSystem *GetInputSystem() const { return CheckSystem( inputSystem.get() ); }
+	MeshSystem *GetMeshSystem() const { return CheckSystem( meshSystem.get() ); }
 	ModelSystem *GetModelSystem() const { return CheckSystem( modelSystem.get() ); }
 
 	IResourcePool *CreateResourcePool( IResourcePool *parent ) override;
@@ -126,8 +128,9 @@ private:
 	unique_ptr< TextureSystem > textureSystem;
 	unique_ptr< ShaderSystem > shaderSystem;
 	unique_ptr< MaterialSystem > materialSystem;
-	unique_ptr< RenderSystem > renderer;
+	unique_ptr< RenderSystem > renderSystem;
 	unique_ptr< InputSystem > inputSystem;
+	unique_ptr< MeshSystem > meshSystem;
 	unique_ptr< ModelSystem > modelSystem;
 	std::vector< unique_ptr< ResourcePool > > resourcePools;
 

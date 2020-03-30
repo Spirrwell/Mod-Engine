@@ -28,12 +28,12 @@ void InputSystem::configure( Engine *engine )
 	Left = CreateButton( "Left" );
 	SetKeyBinding( Left, { SDLK_a } );
 
-	renderer = engine->GetRenderSystem();
+	renderSystem = engine->GetRenderSystem();
 }
 
 void InputSystem::unconfigure( Engine *engine )
 {
-	renderer = nullptr;
+	renderSystem = nullptr;
 
 	for ( auto pGameController : gameControllers )
 		SDL_GameControllerClose( pGameController );
@@ -71,13 +71,13 @@ void InputSystem::HandleSDLEvents()
 			case SDL_WINDOWEVENT:
 			{
 				if ( event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
-					renderer->NotifyWindowResized( static_cast< uint32_t >( event.window.data1 ), static_cast< uint32_t >( event.window.data2 ) );
+					renderSystem->NotifyWindowResized( static_cast< uint32_t >( event.window.data1 ), static_cast< uint32_t >( event.window.data2 ) );
 				}
 				else if ( event.window.event == SDL_WINDOWEVENT_MINIMIZED ) {
-					renderer->NotifyWindowMinimized();
+					renderSystem->NotifyWindowMinimized();
 				}
 				else if ( event.window.event == SDL_WINDOWEVENT_MAXIMIZED || event.window.event == SDL_WINDOWEVENT_RESTORED ) {
-					renderer->NotifyWindowMaximized();
+					renderSystem->NotifyWindowMaximized();
 				}
 
 				break;

@@ -1,7 +1,7 @@
 #include "texture.hpp"
 #include "engine.hpp"
 #include "log.hpp"
-#include "renderer.hpp"
+#include "rendersystem.hpp"
 
 Texture::Texture( VulkanSystem *vulkanSystem ) :
 	vulkanSystem( vulkanSystem )

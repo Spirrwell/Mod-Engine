@@ -7,7 +7,7 @@
 
 void Game::configure( IEngine *engine )
 {
-	renderer = engine->GetIRenderSystem();
+	renderSystem = engine->GetIRenderSystem();
 	inputSystem = engine->GetIInputSystem();
 	modelSystem = engine->GetIModelSystem();
 
@@ -36,7 +36,7 @@ void Game::tick( float dt )
 
 	glm::mat4 modelMat = glm::mat4( 1.0f );
 	modelMat = glm::translate( modelMat, glm::vec3( 0.0f, 0.0f, 0.0f ) );
-	renderer->DrawModel( dungeon, modelMat );
+	renderSystem->DrawModel( dungeon, modelMat );
 }
 
 void Game::UpdateFrameCount( float dt )
@@ -58,7 +58,7 @@ void Game::UpdateCamera()
 	auto &yaw = eulerAngles[ 1 ];
 	auto &roll = eulerAngles[ 2 ];
 
-	auto &viewMatrix = renderer->GetRenderView().viewMatrix;
+	auto &viewMatrix = renderSystem->GetRenderView().viewMatrix;
 	viewMatrix = glm::mat4( 1.0f );
 
 	// Y Rotation

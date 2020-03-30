@@ -1,7 +1,7 @@
-#ifndef RENDERER_HPP
-#define RENDERER_HPP
+#ifndef RENDERSYSTEM_HPP
+#define RENDERSYSTEM_HPP
 
-#include "engine/irenderer.hpp"
+#include "engine/irendersystem.hpp"
 #include "enginesystem.hpp"
 #include "glm/glm.hpp"
 #include "memory.hpp"
@@ -69,4 +69,4 @@ private:
 	bool isMinimized = false;
 };
 
-#endif // RENDERER_HPP
+#endif // RENDERSYSTEM_HPP

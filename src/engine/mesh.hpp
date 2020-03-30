@@ -13,7 +13,10 @@ class Material;
 
 class Mesh : public IMesh, public VulkanInterface
 {
+	friend class MeshSystem;
+
 public:
+
 	using VulkanInterface::VulkanInterface;
 	~Mesh();
 
@@ -26,6 +29,8 @@ public:
 
 	const VkBuffer GetVertexBuffer() const { return VertexBuffer; }
 	const VkBuffer GetIndexBuffer() const { return IndexBuffer; }
+
+	inline size_t GetMeshIndex() const { return meshIndex; }
 
 	uint32_t GetVertexCount() const { return vertexCount; }
 	uint32_t GetIndexCount() const { return indexCount; }
@@ -52,6 +57,9 @@ public:
 
 	VkBuffer IndexBuffer = VK_NULL_HANDLE;
 	VmaAllocation IndexBufferAllocation = VK_NULL_HANDLE;
+
+protected:
+	size_t meshIndex = 0; // This will be set by MeshSystem
 };
 
 #endif // MESH_HPP

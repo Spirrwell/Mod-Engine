@@ -1,4 +1,4 @@
-#include "renderer.hpp"
+#include "rendersystem.hpp"
 #include "engine.hpp"
 #include "log.hpp"
 #include "glm/glm.hpp"
@@ -65,8 +65,8 @@ void RenderSystem::DrawMesh( IMesh *mesh, const glm::mat4 &modelMat )
 void RenderSystem::DrawModel( IModel *model, const glm::mat4 &modelMat )
 {
 	Model *realModel = Model::ToModel( model );
-	for ( auto &mesh : realModel->meshes )
-		DrawMesh( mesh.get(), modelMat );
+	for ( auto mesh : realModel->meshes )
+		DrawMesh( mesh, modelMat );
 }
 
 void RenderSystem::NotifyWindowResized( uint32_t width, uint32_t height )

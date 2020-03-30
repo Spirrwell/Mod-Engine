@@ -5,6 +5,7 @@
 #include "enginesystem.hpp"
 #include "filesystem.hpp"
 #include "materialsystem.hpp"
+#include "meshsystem.hpp"
 #include "model.hpp"
 #include "resource.hpp"
 
@@ -28,6 +29,7 @@ private:
 	FileSystem *fileSystem = nullptr;
 	VulkanSystem *vulkanSystem = nullptr;
 	MaterialSystem *materialSystem = nullptr;
+	MeshSystem *meshSystem = nullptr;
 
 	mutable std::mutex modelsMutex;
 };

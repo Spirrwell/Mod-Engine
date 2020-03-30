@@ -101,6 +101,7 @@ void ModelSystem::configure( Engine *engine )
 	fileSystem = engine->GetFileSystem();
 	vulkanSystem = engine->GetVulkanSystem();
 	materialSystem = engine->GetMaterialSystem();
+	meshSystem = engine->GetMeshSystem();
 }
 
 void ModelSystem::unconfigure( Engine *engine )
@@ -152,7 +153,7 @@ IModel *ModelSystem::LoadModel( const std::filesystem::path &relpath, const std:
 		}
 	}
 
-	auto resource = ResourcePool::createResource< Model >( ResourceInfo { relpath.generic_string() } );
+	auto resource = ResourcePool::createResource< Model >( ResourceInfo { relpath.generic_string() }, meshSystem );
 	Model *model = resource->resource.get();
 	model->meshes.resize( pScene->mNumMeshes );
 
@@ -160,7 +161,7 @@ IModel *ModelSystem::LoadModel( const std::filesystem::path &relpath, const std:
 	{
 		Material *material = nullptr;
 
-		model->meshes[ meshidx ] = make_unique< Mesh >( vulkanSystem );
+		model->meshes[ meshidx ] = meshSystem->CreateMesh();
 		const aiMesh *pAIMesh = pScene->mMeshes[ meshidx ];
 
 		if ( pAIMesh->mMaterialIndex >= 0 )
